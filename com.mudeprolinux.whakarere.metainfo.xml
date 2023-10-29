@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
   <id>com.mudeprolinux.whakarere</id>
-  
+  <release>0.0.2</release>
   <name>Whakarere</name>
   <summary>GTK4 Whatsapp Client</summary>
   
@@ -20,12 +20,12 @@
   
   <screenshots>
     <screenshot type="default">
-      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/screenshot1.png</image>
+      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/screenshot1.png?raw=true</image>
     </screenshot>
     <screenshot>
-      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/screenshot2.png</image>
+      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/screenshot2.png?raw=true</image>
     </screenshot>
   </screenshots>
-  
+  <content_rating type="oars-1.1" />
   <launchable type="desktop-id">com.mudeprolinux.whakarere.desktop</launchable>
 </component>
