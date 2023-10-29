@@ -13,6 +13,17 @@
       a python gtk4 application with a webkit webview wrapped around web.whatsapp.com
     </p>
   </description>
+
+  <url type="homepage">http://www.mudeprolinux.com/</url>
+  <url type="bugtracker">https://github.com/tobagin/whakarere/issues</url>
+  <url type="help">http://wiki.mudeprolinux.com/</url>
+  <url type="donation">http://wiki.wxhexeditor.org/index.php?title=Donation</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>http://www.wxhexeditor.org/images/screenshot.png</image>
+    </screenshot>
+  </screenshots>
   
   <launchable type="desktop-id">com.mudeprolinux.whakarere.desktop</launchable>
 </component>
