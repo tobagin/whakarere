@@ -4,8 +4,6 @@ gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
 from gi.repository import Gtk, Adw, WebKit
 
-BASE64_ICON = ""
-
 BUS_NAME = "com.mudeprolinux.whakarere"
 
 class WebViewWindow(Gtk.Window):
