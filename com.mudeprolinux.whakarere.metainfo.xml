@@ -14,13 +14,6 @@
         </ul>
       </description>
     </release>
-    <release version="0.0.7" date="2023-10-29">
-      <description>
-        <ul>
-            <li>changed properties on the executable</li>
-        </ul>
-      </description>
-    </release>
   </releases>
 
   <name>Whakarere</name>
