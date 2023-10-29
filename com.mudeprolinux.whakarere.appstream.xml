@@ -16,12 +16,14 @@
 
   <url type="homepage">http://www.mudeprolinux.com/</url>
   <url type="bugtracker">https://github.com/tobagin/whakarere/issues</url>
-  <url type="help">http://wiki.mudeprolinux.com/</url>
-  <url type="donation">http://wiki.wxhexeditor.org/index.php?title=Donation</url>
-
+  <url type="help">http://github.com/tobagin/whakarere/</url>
+  
   <screenshots>
     <screenshot type="default">
-      <image>http://www.wxhexeditor.org/images/screenshot.png</image>
+      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/screenshot1.png</image>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/screenshot2.png</image>
     </screenshot>
   </screenshots>
   
