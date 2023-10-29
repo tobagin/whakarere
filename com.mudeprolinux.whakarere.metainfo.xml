@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
   <id>com.mudeprolinux.whakarere</id>
-  <release>0.0.4</release>
+  <releases>
+	<release version="0.0.5" date="2023-10-29">
+		<description>
+      <ul>
+          <li>Introduced the core application framework using GTK4.</li>
+          <li>Integrated WebKit WebView for seamless web content rendering.</li>
+          <li>Connectivity to web.whatsapp.com enabled for messaging on desktop.</li>
+          <li>Responsive design to ensure usability across different window sizes.</li>
+          <li>Added error handling for WebView to improve user experience during connection issues.</li>
+          <li>Implemented security features for safer web browsing within the app.</li>
+      </ul>
+		</description>
+	</release>
+</releases>
+
   <name>Whakarere</name>
   <summary>GTK4 Whatsapp Client</summary>
   
