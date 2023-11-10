@@ -7,6 +7,7 @@ Here are some screenshots:
 ![Main Screen](main-screen.png) 
 ![Main Screen With Added Session](main-screen-with-session.png) 
 ![QR Code Scanning Screen](qr-code-screen.png)
+![Main Screen With Authenticated Session](main-screen-with-authenticated-session.png)
 ![About Window](about.png)
 
 ## To-Do List
