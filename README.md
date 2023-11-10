@@ -14,7 +14,7 @@ Here are some screenshots:
 - [X] Implement basic UI structure.
 - [X] Design and integrate main screen elements.
 - [X] Develop session management functionality.
-- [X] Design and integrate qr code screen elements.
+- [X] Design and integrate QR code scanning elements.
 - [ ] Design and integrate authenticated session screen elements. 
 
 ### Additional Features
