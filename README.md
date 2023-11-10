@@ -17,7 +17,7 @@ Here are some screenshots:
 - [X] Design and integrate main screen elements.
 - [X] Develop session management functionality.
 - [X] Design and integrate QR code scanning elements.
-- [X] Design and integrate a about windows, app information.
+- [X] Design and integrate a about window with app information.
 - [ ] Design and integrate authenticated session screen elements. 
 
 ### Additional Features
