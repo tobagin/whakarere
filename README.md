@@ -7,6 +7,7 @@ Here are some screenshots:
 ![Main Screen](main-screen.png) 
 ![Main Screen With Added Session](main-screen-with-session.png) 
 ![QR Code Scanning Screen](qr-code-screen.png)
+![About Window](about-window.png)
 
 ## To-Do List
 
@@ -15,6 +16,7 @@ Here are some screenshots:
 - [X] Design and integrate main screen elements.
 - [X] Develop session management functionality.
 - [X] Design and integrate QR code scanning elements.
+- [X] Design and integrate a about windows, app information.
 - [ ] Design and integrate authenticated session screen elements. 
 
 ### Additional Features
