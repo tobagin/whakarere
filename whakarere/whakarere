@@ -1,0 +1,3 @@
+#!/bin/bash
+sudo /usr/local/share/whakarere/whakarere/whatsapp-web-api &
+/usr/local/share/whakarere/whakarere/whakarere &
