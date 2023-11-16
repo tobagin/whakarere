@@ -1,0 +1,14 @@
+{
+    "name": "python3-pkg",
+    "buildsystem": "simple",
+    "build-commands": [
+        "pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \"pkg\" --no-build-isolation"
+    ],
+    "sources": [
+        {
+            "type": "file",
+            "url": "https://files.pythonhosted.org/packages/41/86/2908a6096a80c519f1ecb7793344a53e127be4ad601864097f72a317f7cf/pkg-0.2-py3-none-any.whl",
+            "sha256": "88849f47c7c4f5242f7190da896133613229ff17198c84d463b0ad8d458363f0"
+        }
+    ]
+}

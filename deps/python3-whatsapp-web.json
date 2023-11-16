@@ -1,0 +1,14 @@
+{
+    "name": "python3-whatsapp-web",
+    "buildsystem": "simple",
+    "build-commands": [
+        "pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \"whatsapp-web\" --no-build-isolation"
+    ],
+    "sources": [
+        {
+            "type": "file",
+            "url": "https://files.pythonhosted.org/packages/62/36/decdcc9b89a9f1a82fe3368d1306d0c4b0ecbd66a326b06ff8f983dd5cf1/whatsapp_web-0.0.1-py3-none-any.whl",
+            "sha256": "c17abb6563a8aa5a28fd37fcef4bc0a3c46618c7265d186cc40352474466f72e"
+        }
+    ]
+}

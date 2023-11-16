@@ -1,0 +1,19 @@
+app-id: com.mudeprolinux.whakarere
+runtime: org.gnome.Platform
+runtime-version: '45'
+sdk: org.gnome.Sdk
+command: whakarere
+
+finish-args:
+  - --share=network       # Share the host network with the app
+  - --socket=fallback-x11 # Fallback to X11 if Wayland is not available
+  - --socket=wayland      # wayland support
+  - --socket=pulseaudio   # Share the host PulseAudio server
+  - --socket=session-bus  # Share the host D-Bus session bus
+  - --device=dri          # Accelerated 3D graphics
+
+modules:
+  - name: Whakarere
+    buildsystem: meson
+    sources:
+      - meson.build

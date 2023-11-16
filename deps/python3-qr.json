@@ -1,0 +1,14 @@
+{
+    "name": "python3-qr",
+    "buildsystem": "simple",
+    "build-commands": [
+        "pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \"qr\" --no-build-isolation"
+    ],
+    "sources": [
+        {
+            "type": "file",
+            "url": "https://files.pythonhosted.org/packages/5b/c1/c4f005b0316581c77c8525bee195cff1bde3982f87482e5a8f7560e0a1f0/qr-0.6.0.tar.gz",
+            "sha256": "9033bbdab351c939419d525d88c499b7b5da38c177cb6ecadccc215c14aa36a2"
+        }
+    ]
+}
