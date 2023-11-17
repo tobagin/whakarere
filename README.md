@@ -27,19 +27,26 @@ I just haven't had a good experience with the current whatsapps client available
 - [ ] Implementing loading of all messages upon selecting a chat/group chat.
 - [ ] implementing basic text message sending functions.
 - [ ] Implementing basic notification for incoming messages.
+- [X] Adding about window.
+- [ ] Publish on Flathub
 
 ### Phase 2 (v0.2.0) - Database Update
 - [ ] Add a database to improve performance and eliminate the need for constant api calls.
 - [ ] Implement WhatsAppManager to handle the newly added database and minimize calls to to the api.
 - [ ] Refactor code to use database calls instead of the api.
+- [ ] Publish on Flathub
 
-### Phase 3 (0.3.0 - Message Types Updates.
-- [ ] 
+### Phase 3 (0.3.0) - Message Types Updates.
 - [ ] Improve message sending functions to include media types(Photo, video, poll, share, location and etc).
 - [ ] Improve notifications to handle new the newly included message types.
-- [ ] 
-- [ ]
-- [ ] 
+- more to be added
+- [ ] Publish on Flathub
+
+### Phase 4 (0.4.0) - Remaining Fuctions updates.
+- TBA
+
+### Phase 5 (0.5.0) - UX/UI Refactoring update.
+- TBA
 
 ## Milestones and Timeline (Current planned release dates based on me working alone at the point)
 - Phase 1: 15/12/2023
