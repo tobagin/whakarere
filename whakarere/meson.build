@@ -46,12 +46,6 @@ whakarere_main = [
 ]
 install_data(whakarere_main, install_dir: whakarere_dir, install_mode: 'rwxr-xr-x')
 
-whakarere_api = [
-  'api/__init__.py',
-  'api/whatsapp.py',
-]
-install_data(whakarere_api, install_dir: whakarere_dir / 'api', install_mode: 'rwxr-xr-x')
-
 whakarere_images = [
   'images/__init__.py',
   'images/unknown_contact.py',

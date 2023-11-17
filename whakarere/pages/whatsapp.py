@@ -73,6 +73,7 @@ class WhatsappMessengerPage(Adw.NavigationPage):
         self.split_view.set_halign(Gtk.Align.FILL)
         self.split_view.set_sidebar(self.sidebar)
         self.split_view.set_content(self.content)
+        self.split_view.set_min_sidebar_width(270)
 
         # Create page content
         self.page_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -85,7 +86,6 @@ class WhatsappMessengerPage(Adw.NavigationPage):
     def load_chats(self):
         chats = self.app_manager.whatsapp_manager.get_chats(self.app_manager.session_manager.current_session_id)
         for chat in chats:
-            print(chat)
             if chat['id']['server'] == 'broadcast':
                 continue
             chat_id = chat["id"]["_serialized"]
@@ -186,6 +186,7 @@ class WhatsappMessengerPage(Adw.NavigationPage):
         # Set label text with markup for font size
         label_last_message.set_markup("<span font='8'>" + escaped_last + "</span>")
 
+        label_last_message.set_justify(True)
         label_last_message.set_use_markup(True)
         label_last_message.set_halign(Gtk.Align.START)
         label_last_message.set_valign(Gtk.Align.CENTER)
@@ -194,7 +195,7 @@ class WhatsappMessengerPage(Adw.NavigationPage):
 
         # Set label properties for wrapping and font size
         label_last_message.set_wrap(True)
-        label_last_message.set_wrap_mode(Pango.WrapMode.WORD_CHAR)
+        label_last_message.set_wrap_mode(Pango.WrapMode.WORD)
         label_last_message.set_lines(2)
         label_last_message.set_max_width_chars(50)  # Adjust the value as needed
 
@@ -223,7 +224,7 @@ class WhatsappMessengerPage(Adw.NavigationPage):
         # Set label text with markup for font size
         label_timestamp.set_markup("<span font='6'>" + escaped_timestamp + "</span>")
 
-        label_timestamp.set_halign(Gtk.Align.END)
+        label_timestamp.set_halign(Gtk.Align.END)   
         label_timestamp.set_valign(Gtk.Align.CENTER)
         label_timestamp.set_margin_top(5)
         label_timestamp.set_margin_end(10)
@@ -239,7 +240,29 @@ class WhatsappMessengerPage(Adw.NavigationPage):
         chat_menu.get_popover().set_position(Gtk.PositionType.BOTTOM)
         chat_menu.get_popover().set_has_arrow(True)
         chat_menu.get_popover().set_size_request(200, 200)
-        chat_menu.get_popover().set_child(Gtk.Label(label="Archive Chat"))
+        chat_menu_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        chat_menu_box.vexpand = True
+        label_archive_chat = Gtk.Label(label="Archive Chat")
+        label_archive_chat.set_vexpand(True)
+        label_archive_chat.set_hexpand(True)
+        chat_menu_box.append(label_archive_chat)
+        label_mute_notifications = Gtk.Label(label="Mute Notifications")
+        label_mute_notifications.set_vexpand(True)
+        label_mute_notifications.set_hexpand(True)
+        chat_menu_box.append(label_mute_notifications)
+        label_exit_group = Gtk.Label(label="Exit Group")
+        label_exit_group.set_vexpand(True)
+        label_exit_group.set_hexpand(True)
+        chat_menu_box.append(label_exit_group)
+        label_pin_chat = Gtk.Label(label="Pin Chat")
+        label_pin_chat.set_vexpand(True)
+        label_pin_chat.set_hexpand(True)
+        chat_menu_box.append(label_pin_chat)
+        label_mark_as_read = Gtk.Label(label="Mark as read")
+        label_mark_as_read.set_vexpand(True)
+        label_mark_as_read.set_hexpand(True)
+        chat_menu_box.append(label_mark_as_read)
+        chat_menu.get_popover().set_child(chat_menu_box)
         vbox_end.append(label_timestamp)
         vbox_end.append(chat_menu)
         hbox.append(vbox_end)

@@ -17,6 +17,7 @@ class AppManager:
         self.whatsapp_manager = WhatsAppSessionManager(self)
         self.session_manager = SessionManager(self)
         self.qrcode_manager = QRCodeManager(self)
+        self.whatsapp_sessions_pages = []
         self.config_file_path = os.path.expanduser("~/.config/whakarere/config.json")
         self.load_config()
         atexit.register(self.save_config)
@@ -57,6 +58,11 @@ class AppManager:
         self.qrcode_page = QrManagerPage(self)
         self.main_window.navigation_view.push(self.qrcode_page)
 
-    def navigate_to_whatsapp_messenger_page(self):
-        self.whatsapp_page = WhatsappMessengerPage(self)
-        self.main_window.navigation_view.push(self.whatsapp_page)
+    def navigate_to_whatsapp_messenger_page(self, session_id):
+        # make it so it checks for for already open session on whatsapp_sessions_pages
+        # if it has one and if doesn´t it creates a new one and pushes into the whatsapp_sessions_pages
+        if session_id in self.whatsapp_sessions_pages:
+            self.main_window.navigation_view.push(self.whatsapp_sessions_pages[session_id])
+        else:
+            self.whatsapp_sessions_pages[session_id] = WhatsappMessengerPage(self, session_id)
+            self.main_window.navigation_view.push(self.whatsapp_sessions_pages[session_id])

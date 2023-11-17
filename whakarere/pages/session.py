@@ -227,7 +227,7 @@ class SessionManagerPage(Adw.NavigationPage):
     def launch_selected_session(self, button):
         if self.selected_item is not None:
             self.app_manager.session_manager.set_current_session(self.selected_item.session_id)
-            self.app_manager.navigate_to_whatsapp_messenger_page()
+            self.app_manager.navigate_to_whatsapp_messenger_page(self.selected_item.session_id)
         
     def activate_selected_session(self, button):
         if self.selected_item is not None:
