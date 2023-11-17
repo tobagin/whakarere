@@ -1,7 +1,6 @@
 import os
 import json
 
-from whakarere.api.whatsapp import WhatsAppAPI
 from whakarere.managers.session import SessionManager
 from whakarere.managers.whatsapp import WhatsAppSessionManager
 from whakarere.managers.qrcode import QRCodeManager

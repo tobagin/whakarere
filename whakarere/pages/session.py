@@ -26,7 +26,13 @@ class SessionManagerPage(Adw.NavigationPage):
         self.page_headerbar = Adw.HeaderBar()
         self.page_headerbar.set_title_widget(self.window_titlebar_widget)
         self.page_headerbar.pack_end(self.button_settings_menu)
-        
+
+        if self.app_manager.is_dev():
+            self.terminate_all_sessions = Gtk.Button()
+            self.terminate_all_sessions.set_label("T.A.S.") # Terminate All Sessions
+            self.terminate_all_sessions.connect("clicked", self.app_manager.whatsapp_manager.terminate_all_sessions)
+            self.page_headerbar.pack_end(self.terminate_all_sessions)
+
         # Create Account List
         self.account_list = Gio.ListStore(item_type=AccountItem)
         for session_id in self.app_manager.session_manager.get_session_ids():
