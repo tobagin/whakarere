@@ -10,7 +10,7 @@ I just haven't had a good experience with the current whatsapps client available
 - Libadwaita
 
 ### Backend
-- NodeJs App ([whakarere-api](https://github.com/tobagin/whakarere-api))
+- NodeJs App (Providaded pre compiled and compacted in the repo with source available at [whakarere-api](https://github.com/tobagin/whakarere-api))
 
 ## Development Phases
 ### Phase 1 (v0.1.0) - Next Release
