@@ -1,18 +1,5 @@
 # Whakarere App Roadmap
 
-## Table of Contents
-1. [Vision and Objectives](#vision-and-objectives)
-2. [Market Research and User Needs](#market-research-and-user-needs)
-3. [Feature Breakdown](#feature-breakdown)
-4. [Technology Stack](#technology-stack)
-5. [Development Phases](#development-phases)
-6. [Milestones and Timeline](#milestones-and-timeline)
-7. [Budget and Resources](#budget-and-resources)
-8. [Distribution and Maintenance Plan](#distribution-and-maintenance-plan)
-9. [Risks and Mitigation Strategies](#risks-and-mitigation-strategies)
-10. [Marketing and Launch Strategy](#marketing-and-launch-strategy)
-11. [Long-term Vision](#long-term-vision)
-
 ## Objective
 I just haven't had a good experience with the current whatsapps client available for linux, so I decided to create a flatpak whatsapp client using python and gnome technologies for its frontend and for the backend we'll user project based on [whatsapp-api](https://github.com/chrishubert/whatsapp-api) with few modifications to accommodate out use case. 
 
