@@ -11,9 +11,30 @@ finish-args:
   - --socket=pulseaudio   # Share the host PulseAudio server
   - --socket=session-bus  # Share the host D-Bus session bus
   - --device=dri          # Accelerated 3D graphics
+  - --filesystem=x
 
 modules:
+  - deps/python3-pkg.json
+  - deps/python3-pluggy.json
+  - deps/python3-qr.json
+  - deps/python3-qrcode.json
+  - deps/python3-requests.json
+  - deps/python3-setuptools-scm.json
+  - deps/python3-wheel.json
+  - name: chromium
+    buildsystem: simple
+    build-commands:
+      - install -D /etc/chromium/default /app/etc/chromium/default
+      - install -D /usr/bin/chromium /app/bin/chromium
+      - install -D /usr/bin/chromium-browser /app/bin/chromium-browser
+      - cp -r /usr/lib64/chromium-browser /app/lib64/chromium-browser
+    sources:
+      - type: archive
+        url: "https://github.com/path/to/chromium.tar.bz2"
+        sha256: "SHA256SUM"
+
   - name: Whakarere
     buildsystem: meson
     sources:
       - meson.build
+    config-opts
