@@ -50,10 +50,13 @@ class WhatsAppSessionManager:
                     self.chats_avatar[chat["id"]["_serialized"]] = self.whatsapp_manager.get_user_profile_picture(chat["id"]["_serialized"], session)
         print("Initialized sessions")
 
+    # Chats methods
+
+    # Return chats for the given session_id or an empty list if not found
     def get_chats(self, session_id):
-        # Return chats for the given session_id or an empty list if not found
         return self.chats.get(session_id, [])
 
+    # Return the contact/group avatar the given chat_id or generic image if none is found
     def get_chat_avatar(self, chat_id):
         url = self.chats_avatar.get(chat_id, None)
         if url is not None:
@@ -70,7 +73,6 @@ class WhatsAppSessionManager:
             return Gdk.Texture.new_for_pixbuf(pixbuf)
                 
     def get_messages(self, chat_id):
-        # Return messages for the given chat_id or an empty list if not found
         return self.messages_by_chat.get(chat_id, [])
 
     def get_user_id(self, session_id):
@@ -102,6 +104,13 @@ class WhatsAppSessionManager:
 
     def get_chat_last_message_author(self, chat_id, session_id):
         return self.whatsapp_manager.get_chat_last_message_author(chat_id, session_id)
+
+    # Session methods
+    def check_session_id(self, session_id):
+        return self.whatsapp_manager.check_session_id(session_id)
+
+    def terminate_session(self, session_id):
+        return self.whatsapp_manager.terminate_all_sessions()
 
     # QR Code methods
 

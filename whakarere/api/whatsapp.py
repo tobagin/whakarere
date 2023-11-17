@@ -100,6 +100,15 @@ class WhatsAppAPI:
             
         return result 
 
+    def terminate_all_sessions(self):
+        url = self.api_url + f'/session/terminateAll'
+        result = requests.get(url, headers=self.headers).json()["success"]
+
+        if(self.whatsapp_manager.app_manager.is_debug()):
+            print("terminate_inactive_sessions: " + str(result))
+            
+        return result 
+
     ############################
     # Contact methods
     ############################
