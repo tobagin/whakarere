@@ -20,6 +20,7 @@ class QrManagerPage(Adw.NavigationPage):
         self.headers = { 'x-api-key': api_key }
         self.app_manager = app_manager
         self.session_id = session_id
+        print(f"QrManagerPage Session ID: {self.session_id}")
 
         # Create TitleBar Widget
         self.window_titlebar_widget = WindowTitlebarWidget()
@@ -31,6 +32,8 @@ class QrManagerPage(Adw.NavigationPage):
         self.button_settings_menu = MainMenuButtonWidget()
 
         # Create QR Code Image
+        while not self.check_session_status(session_id):
+            time.sleep(1)
         self.qr_code_texture = self.get_qr_code_texture(self.get_qr_code_data(session_id))
         self.qr_code = Gtk.Picture()
         self.qr_code.set_paintable(self.qr_code_texture)
@@ -96,10 +99,12 @@ class QrManagerPage(Adw.NavigationPage):
         pixbuf = loader.get_pixbuf()
         loader.close()
         return pixbuf
+    
+    def check_session_status(self, session_id):
+        url = self.api_url + f'/session/status/{session_id}'
+        result = requests.get(url, headers=self.headers).json()["success"]
 
-    def check_session_status_thread(self, session_id):
-        while not self.check_session_status(session_id):
-            time.sleep(2)
-        self.app_manager.main_window.navigation_view.pop()
-        self.app_manager.main_window.session_manager_page.refresh_listview()
-        time.sleep(5)
+        if(self.app_manager.is_debug()):
+            print("check_session_status: " + str(result))
+            
+        return result 
