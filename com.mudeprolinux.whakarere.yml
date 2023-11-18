@@ -24,7 +24,7 @@ finish-args:
   - --filesystem=xdg-pictures
   - --filesystem=xdg-videos
   # Needs to access the config directory for app settings
-  - --filesystem=xdg-data/whakarere:rw
+  - --filesystem=xdg-config/whakarere:rw
 
 modules:
   - deps/python3-pkg.json
