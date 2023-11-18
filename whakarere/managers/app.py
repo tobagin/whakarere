@@ -15,7 +15,6 @@ class AppManager:
         self.main_window = main_window
         self.whatsapp_manager = WhatsAppSessionManager(self)
         self.session_manager = SessionManager(self)
-        self.qrcode_pages = {}
         self.whatsapp_sessions_pages = {}
         self.config_file_path = os.path.expanduser("~/.config/whakarere/config.json")
         self.load_config()
@@ -44,16 +43,9 @@ class AppManager:
     def get_config(self, key):
         return self.config.get(key)
 
-    def add_qrcode_page(self, session_id):
-        if session_id not in self.qrcode_pages:
-            self.qrcode_pages[session_id] = QrManagerPage(self, session_id)
-
     def navigate_to_qr_manager_page(self, session_id):
-        if session_id in self.qrcode_pages:
-            self.main_window.navigation_view.push(self.qrcode_pages[session_id])
-        else:
-            self.add_qrcode_page(session_id)
-            self.main_window.navigation_view.push(self.qrcode_pages[session_id])
+        qr_code_page = QrManagerPage(self, session_id)
+        self.main_window.navigation_view.push(qr_code_page)
 
     def add_whatsapp_messenger_page(self, session_id):
         if session_id not in self.whatsapp_sessions_pages:
