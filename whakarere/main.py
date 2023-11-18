@@ -57,6 +57,7 @@ class WhakarereApplication(Adw.Application):
 
 def main():
     if not os.path.exists(os.path.expanduser("~/.config/whakarere/")):
+        print('Creating whakarere config directory')
         os.makedirs(os.path.dirname(os.path.expanduser("~/.config/whakarere/")), exist_ok=True)
 
     if not os.path.exists(os.path.expanduser("~/.config/whakarere/config.json")):
@@ -67,6 +68,9 @@ def main():
     if not os.path.exists(os.path.expanduser("~/.config/whakarere/sessions")):
         os.makedirs(os.path.dirname(os.path.expanduser("~/.config/whakarere/sessions/")), exist_ok=True)
 
+    if not os.path.exists(os.path.expanduser("~/.config/whakarere/")):
+        print('Whakaere config directory not found')
+        
     parser = argparse.ArgumentParser(description='Whakarere Application')
     parser.add_argument('--debug', action='store_true', help='Debug mode enabled')
     parser.add_argument('--dev', action='store_true', help='Running in development mode')
