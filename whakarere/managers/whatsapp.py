@@ -42,7 +42,6 @@ class WhatsAppSessionManager:
             cursor.close()
 
     def initialize(self):
-        print("Initializing sessions")
         sessions_thread = threading.Thread(target=self.initialize_sessions)
         sessions_thread.start()
 
@@ -67,7 +66,6 @@ class WhatsAppSessionManager:
                 self.app_manager.add_whatsapp_messenger_page(session)
             else:
                 self.app_manager.add_qrcode_page(session)
-        print("Initialized sessions")
 
     ############################
     # Chat methods
