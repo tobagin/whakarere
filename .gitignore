@@ -1,2 +1,3 @@
 .flatpak-builder
 whakarere/whakarere-api
+virtenv/*
