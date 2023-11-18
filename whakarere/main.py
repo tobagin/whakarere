@@ -22,7 +22,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-import subprocess, threading, os, sys, gi, traceback, argparse
+import subprocess, threading, os, sys, gi, traceback, argparse, json
 from time import sleep
 
 gi.require_version('Gtk', '4.0')
@@ -56,6 +56,17 @@ class WhakarereApplication(Adw.Application):
         Adw.init()  # Initialize libadwaita
 
 def main():
+    if not os.path.exists(os.path.expanduser("~/.config/whakarere/")):
+        os.makedirs(os.path.dirname(os.path.expanduser("~/.config/whakarere/")), exist_ok=True)
+
+    if not os.path.exists(os.path.expanduser("~/.config/whakarere/config.json")):
+        os.makedirs(os.path.dirname(os.path.expanduser("~/.config/whakarere/config.json")), exist_ok=True)
+        with open(os.path.expanduser("~/.config/whakarere/config.json"), 'w') as config_file:
+            json.dump({}, config_file)
+
+    if not os.path.exists(os.path.expanduser("~/.config/whakarere/sessions")):
+        os.makedirs(os.path.dirname(os.path.expanduser("~/.config/whakarere/sessions/")), exist_ok=True)
+
     parser = argparse.ArgumentParser(description='Whakarere Application')
     parser.add_argument('--debug', action='store_true', help='Debug mode enabled')
     parser.add_argument('--dev', action='store_true', help='Running in development mode')

@@ -11,15 +11,16 @@ from datetime import datetime
 import base64, requests, threading
 
 class WhatsappMessengerPage(Adw.NavigationPage):
-    def __init__(self, app_manager):
+    def __init__(self, app_manager, session_id):
         super().__init__()
         self.set_title("Whakarere")
         self.app_manager = app_manager
+        self.session_id = session_id
 
         # Create TitleBar Widget
         self.window_titlebar_widget = WindowTitlebarWidget()
         self.window_titlebar_widget.set_title("Whakarere")
-        self.window_titlebar_widget.set_subtitle(f"Current Session: {self.app_manager.whatsapp_manager.get_user_name(self.app_manager.session_manager.current_session_id)}")
+        self.window_titlebar_widget.set_subtitle(f"Current Session: {self.app_manager.whatsapp_manager.get_user_name(self.session_id)}")
         self.set_can_pop(True)
 
         # Create Main Menu Button Widget
@@ -84,12 +85,16 @@ class WhatsappMessengerPage(Adw.NavigationPage):
         self.set_child(self.page_content)
 
     def load_chats(self):
-        chats = self.app_manager.whatsapp_manager.get_chats(self.app_manager.session_manager.current_session_id)
+        chats = self.app_manager.whatsapp_manager.get_chats_by_id(self.session_id)
         for chat in chats:
             if chat['id']['server'] == 'broadcast':
                 continue
             chat_id = chat["id"]["_serialized"]
-            chat_name = chat["name"]
+            try:
+                if(chat['name']):
+                    chat_name = chat["name"]
+            except:
+                chat_name = "Unknown"
             chat_picture = self.app_manager.whatsapp_manager.get_chat_avatar(chat_id)
 
             if chat['lastMessage']['_data']['type'] == 'chat':
@@ -122,17 +127,17 @@ class WhatsappMessengerPage(Adw.NavigationPage):
             chat_timestamp = chat["timestamp"]
             if chat['lastMessage']['_data']['hasReaction']:
                 if chat['lastMessage']['_data']['id']['fromMe']:
-                    last_messager_user = self.app_manager.whatsapp_manager.get_user_name(self.app_manager.session_manager.current_session_id)
+                    last_messager_user = self.app_manager.whatsapp_manager.get_user_name(self.session_id)
                 else:
-                    last_messager_user = self.app_manager.whatsapp_manager.get_contact_info(chat['lastMessage']['_data']['id']['participant']['_serialized'], self.app_manager.session_manager.current_session_id)
+                    last_messager_user = self.app_manager.whatsapp_manager.get_contact_info(chat['lastMessage']['_data']['id']['participant']['_serialized'], self.session_id)
             else:
                 if is_group:
-                    last_messager_user = self.app_manager.whatsapp_manager.get_contact_info(chat['lastMessage']['_data']['id']['participant']['_serialized'], self.app_manager.session_manager.current_session_id)
+                    last_messager_user = self.app_manager.whatsapp_manager.get_contact_info(chat['lastMessage']['_data']['id']['participant']['_serialized'], self.session_id)
                 else:
                     if chat['lastMessage']['_data']['id']['fromMe']:
-                        last_messager_user = self.app_manager.whatsapp_manager.get_user_name(self.app_manager.session_manager.current_session_id)
+                        last_messager_user = self.app_manager.whatsapp_manager.get_user_name(self.session_id)
                     else:
-                        last_messager_user = self.app_manager.whatsapp_manager.get_contact_info(chat['lastMessage']['_data']['id']['_serialized'], self.app_manager.session_manager.current_session_id)
+                        last_messager_user = self.app_manager.whatsapp_manager.get_contact_info(chat['lastMessage']['_data']['id']['_serialized'], self.session_id)
             unread_messages = chat["unreadCount"]
             chat_item = ChatItem(chat_id, chat_name, chat_picture, last_message_body, chat_timestamp, last_messager_user, unread_messages, is_group)
             self.chat_list.append(chat_item)
@@ -232,13 +237,15 @@ class WhatsappMessengerPage(Adw.NavigationPage):
         label_timestamp.set_vexpand(True)
         chat_menu = Gtk.MenuButton()
         chat_menu.set_icon_name("go-down-symbolic")
-        chat_menu.set_halign(Gtk.Align.END)
-        chat_menu.set_valign(Gtk.Align.CENTER)
+        chat_menu.set_halign(Gtk.Align.START)
+        chat_menu.set_valign(Gtk.Align.END)
         chat_menu.set_has_frame(False)
         chat_menu.set_direction(Gtk.ArrowType.DOWN)
         chat_menu.set_popover(Gtk.Popover())
         chat_menu.get_popover().set_position(Gtk.PositionType.BOTTOM)
         chat_menu.get_popover().set_has_arrow(True)
+        chat_menu.get_popover().set_halign(Gtk.Align.START)
+        chat_menu.get_popover().set_valign(Gtk.Align.END)
         chat_menu.get_popover().set_size_request(200, 200)
         chat_menu_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         chat_menu_box.vexpand = True

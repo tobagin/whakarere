@@ -5,6 +5,7 @@ gi.require_version("GdkPixbuf", "2.0")
 gi.require_version("Gdk", "4.0")
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib
 from whakarere.images.unknown_contact import UnknownContact
+from whakarere.pages.whatsapp import WhatsappMessengerPage
 
 class WhatsAppSessionManager:
     def __init__(self, app_manager):
@@ -16,6 +17,8 @@ class WhatsAppSessionManager:
         self.chats = {}  # Changed to a dictionary to map session IDs to chats
         self.chats_avatar = {}  # Presumably for future functionality
         self.databases = {}  # Changed to a dictionary to map session IDs to databases
+        self.chat_messages = {}  # Presumably for future functionality
+        self.number = 0
 
     def load_or_create_databases(self):
         db_directory = os.path.expanduser("~/.config/whakarere/dbs")
@@ -39,6 +42,7 @@ class WhatsAppSessionManager:
             cursor.close()
 
     def initialize(self):
+        print("Initializing sessions")
         sessions_thread = threading.Thread(target=self.initialize_sessions)
         sessions_thread.start()
 
@@ -48,16 +52,56 @@ class WhatsAppSessionManager:
                 result = self.get_chats(session)  # Fixed assignment
                 self.chats[session] = result  # Store chats indexed by session ID
                 for chat in result:
-                    self.chats_avatar[chat["id"]["_serialized"]] = self.get_user_profile_picture(chat["id"]["_serialized"], session)
+                    chat_id = chat["id"]["_serialized"]
+                    if chat["isGroup"]:
+                        print(chat_id)
+                        try:
+                            self.chat_messages[chat_id] = self.chat_fetch_messages(chat_id, session)
+                        except:        
+                            trimmed_chat_id = chat_id[-15:]
+                            print(trimmed_chat_id)
+                            self.chats[trimmed_chat_id] = self.chat_fetch_messages(trimmed_chat_id, session)
+                    else:
+                        self.chat_messages[chat_id] = self.chat_fetch_messages(chat_id, session)
+                    self.chats_avatar[chat_id] = self.get_user_profile_picture(chat_id, session)
+                self.app_manager.add_whatsapp_messenger_page(session)
+            else:
+                self.app_manager.add_qrcode_page(session)
         print("Initialized sessions")
 
-    # Chats methods
+    ############################
+    # Chat methods
+    ############################
 
-    # Return chats for the given session_id or an empty list if not found
     def get_chats(self, session_id):
+        url = self.api_url + f'/client/getChats/{session_id}'
+        result = requests.get(url, headers=self.headers).json()["chats"]
+
+        if(self.app_manager.is_debug()):
+            print("get_chats: " + str(result))
+            
+        return result 
+    
+    def chat_fetch_messages(self, chat_id, session_id):
+        url = self.api_url + f'/chat/fetchMessages/{session_id}'
+        result = requests.post(url, headers=self.headers, json={'chatId': chat_id})
+        if(self.number == 3):
+            print(result)
+
+        json = result.json()
+
+        if(self.app_manager.is_debug()):
+            print("get_chat_messages: " + str(result))
+
+        if(self.number == 3):
+            print(json)    
+            self.number += 1
+        
+        return result 
+
+    def get_chats_by_id(self, session_id):
         return self.chats.get(session_id, [])
 
-    # Return the contact/group avatar the given chat_id or generic image if none is found
     def get_chat_avatar(self, chat_id):
         url = self.chats_avatar.get(chat_id, None)
         if url is not None:
@@ -72,34 +116,7 @@ class WhatsAppSessionManager:
             input_stream = Gio.MemoryInputStream.new_from_bytes(gbytes)
             pixbuf = GdkPixbuf.Pixbuf.new_from_stream(input_stream, None)
             return Gdk.Texture.new_for_pixbuf(pixbuf)
-
-    def get_qr_code_data(self, session_id):
-        url = self.api_url + f'/session/qr/{session_id}'
-        result = ((requests.get(url, headers=self.headers)).json())["qr"]
-
-        if(self.app_manager.is_debug()):
-            print("get_qr_code_data: " + str(result))
-            
-        return result 
-    
-    def check_session_status(self, session_id):
-        url = self.api_url + f'/session/status/{session_id}'
-        result = requests.get(url, headers=self.headers).json()["success"]
-
-        if(self.app_manager.is_debug()):
-            print("check_session_status: " + str(result))
-            
-        return result 
-
-    def check_session_id(self, session_id):
-        url = self.api_url + f'/session/start/{session_id}'
-        result = requests.get(url, headers=self.headers).json()["success"]
-
-        if(self.app_manager.is_debug()):
-            print("check_session_id: " + str(result))
-            
-        return result 
-    
+   
     def get_user_profile_picture(self, userid, session_id):
         url = self.api_url + f'/client/getProfilePicUrl/{session_id}'
         try:
@@ -130,21 +147,25 @@ class WhatsAppSessionManager:
             
         return result 
 
-    def get_chats(self, session_id):
-        url = self.api_url + f'/client/getChats/{session_id}'
-        result = requests.get(url, headers=self.headers).json()["chats"]
+    ############################
+    # Session methods
+    ############################
+    
+    def check_session_status(self, session_id):
+        url = self.api_url + f'/session/status/{session_id}'
+        result = requests.get(url, headers=self.headers).json()["success"]
 
         if(self.app_manager.is_debug()):
-            print("get_chats: " + str(result))
+            print("check_session_status: " + str(result))
             
         return result 
-    
-    def get_chat_messages(self, chat_id, session_id):
-        url = self.api_url + f'/client/getChatMessages/{session_id}'
-        result = requests.post(url, headers=self.headers, json={'chatId': chat_id}).json()["messages"]
+
+    def check_session_id(self, session_id):
+        url = self.api_url + f'/session/start/{session_id}'
+        result = requests.get(url, headers=self.headers).json()["success"]
 
         if(self.app_manager.is_debug()):
-            print("get_chat_messages: " + str(result))
+            print("check_session_id: " + str(result))
             
         return result 
 

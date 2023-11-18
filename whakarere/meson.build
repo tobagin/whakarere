@@ -56,7 +56,6 @@ install_data(whakarere_images, install_dir: whakarere_dir / 'images', install_mo
 
 whakarere_managers = [
   'managers/app.py',
-  'managers/qrcode.py',
   'managers/session.py',
   'managers/whatsapp.py',
 ]
