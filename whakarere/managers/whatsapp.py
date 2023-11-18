@@ -64,8 +64,6 @@ class WhatsAppSessionManager:
                         self.chat_messages[chat_id] = self.chat_fetch_messages(chat_id, session)
                     self.chats_avatar[chat_id] = self.get_user_profile_picture(chat_id, session)
                 self.app_manager.add_whatsapp_messenger_page(session)
-            else:
-                self.app_manager.add_qrcode_page(session)
 
     ############################
     # Chat methods
