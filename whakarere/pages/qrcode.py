@@ -22,15 +22,6 @@ class QrManagerPage(Adw.NavigationPage):
         self.session_id = session_id
         print(f"QrManagerPage Session ID: {self.session_id}")
 
-        # Create TitleBar Widget
-        self.window_titlebar_widget = WindowTitlebarWidget()
-        self.window_titlebar_widget.set_title("Whakarere")
-        self.window_titlebar_widget.set_subtitle(f"Qr Code for Session:")
-        self.set_can_pop(True)
-
-        # Create MainMenu Button Widget
-        self.button_settings_menu = MainMenuButtonWidget()
-
         # Create QR Code Image
         self.qr_code_texture = self.get_qr_code_texture(self.get_qr_code_data(session_id))
         self.qr_code = Gtk.Picture()
@@ -54,16 +45,7 @@ class QrManagerPage(Adw.NavigationPage):
         self.qr_code_box.set_vexpand(True)  
         self.qr_code_box.append(scrolled_window)
 
-        # Create HeaderBar
-        self.page_headerbar = Adw.HeaderBar()
-        self.page_headerbar.set_title_widget(self.window_titlebar_widget)
-        self.page_headerbar.pack_end(self.button_settings_menu)
-        
-        self.page_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.page_content.append(self.page_headerbar)
-        self.page_content.append(self.qr_code_box)
-
-        self.set_child(self.page_content)
+        self.set_child(self.qr_code_box)
 
         self.check_session_status_thread = threading.Thread(target=self.check_session_status_thread, args=(self.session_id,))
         self.check_session_status_thread.start()
