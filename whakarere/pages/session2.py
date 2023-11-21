@@ -7,18 +7,21 @@ from whakarere.widgets.titlebar import WindowTitlebarWidget
 from whakarere.widgets.main_menu import MainMenuButtonWidget
 from whakarere.types.account import AccountItem
 from whakarere.images.whatsapp_logo_alt import WhatsappLogoAlt
+from whakarere.windows.new_account_wizard import AccountWizardWindow
 from gi.repository import Gtk, Gdk, Gio, Adw, GdkPixbuf, GLib
 
-class SessionManagerPage(Adw.NavigationPage):
+class SessionManagerPage2(Adw.NavigationPage):
     def __init__(self, app_manager):
         super().__init__()
         self.set_title("Whakarere")
         self.app_manager = app_manager
         self.set_can_pop(True)
+        self.session_overlay = Gtk.Overlay()
 
         # Create TitleBar Widget
         self.window_titlebar_widget = WindowTitlebarWidget()
-
+        self.window_titlebar_widget.set_title("Whakarere")
+        self.window_titlebar_widget.set_subtitle("A Gtk4 Whatsapp Client.")
         # Create MainMenu Button Widget
         self.button_settings_menu = MainMenuButtonWidget()
 
@@ -26,6 +29,11 @@ class SessionManagerPage(Adw.NavigationPage):
         self.page_headerbar = Adw.HeaderBar()
         self.page_headerbar.set_title_widget(self.window_titlebar_widget)
         self.page_headerbar.pack_end(self.button_settings_menu)
+        self.add_session_button = Gtk.Button()
+        self.add_session_button.set_icon_name("window-new-symbolic")
+        self.add_session_button.set_tooltip_text("Create a New Session")
+        self.add_session_button.connect("clicked", self.add_new_session)
+        self.page_headerbar.pack_end(self.add_session_button)
 
         if self.app_manager.is_dev():
             self.terminate_all_sessions = Gtk.Button()
@@ -150,11 +158,11 @@ class SessionManagerPage(Adw.NavigationPage):
         # Create page content
         self.page_content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.page_content.append(self.page_headerbar)
-        self.page_content.append(content_box)
-        self.page_content.append(bottom_bar)
-
+        #self.page_content.append(content_box)
+        #self.page_content.append(bottom_bar)
+        self.session_overlay.set_child(self.page_content)
         # Set page content
-        self.set_child(self.page_content)
+        self.set_child(self.session_overlay)
     
     def refresh_listview(self):
         # Update or refresh the data in the list store (modify as needed)
@@ -192,9 +200,9 @@ class SessionManagerPage(Adw.NavigationPage):
                 self.button_activate_session.set_visible(True)
 
     def add_new_session(self, button):
-        session_id = self.app_manager.session_manager.generate_session_id()
-        self.app_manager.session_manager.add_session(session_id)
-        self.account_list.append(AccountItem(session_id))
+        #self.app_manager.main_window.set_sensitive(False) # Disable main window 
+        new_account_wizard = AccountWizardWindow(self.app_manager)
+        new_account_wizard.set_visible(True)
 
     def remove_selected_session(self, button):
         # Create a new message dialog

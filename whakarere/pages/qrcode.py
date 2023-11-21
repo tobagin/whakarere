@@ -82,7 +82,7 @@ class QrManagerPage(Adw.NavigationPage):
     def pil_image_to_pixbuf(self, pil_image):
         """Convert a PIL image to a GdkPixbuf."""
         buffer = BytesIO()
-        pil_image.save(buffer, format="PNG")
+        pil_image.save(buffer)
         glib_bytes = GLib.Bytes.new(buffer.getvalue())
         loader = GdkPixbuf.PixbufLoader.new_with_type("png")
         loader.write_bytes(glib_bytes)

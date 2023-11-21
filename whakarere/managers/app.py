@@ -57,5 +57,5 @@ class AppManager:
         if session_id in self.whatsapp_sessions_pages:
             self.main_window.navigation_view.push(self.whatsapp_sessions_pages[session_id])
         else:
-            self.add_whatsapp_manager_page(session_id)
+            self.add_whatsapp_messenger_page(session_id)
             self.main_window.navigation_view.push(self.whatsapp_sessions_pages[session_id])

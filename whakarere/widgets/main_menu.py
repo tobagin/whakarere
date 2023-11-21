@@ -7,7 +7,7 @@ class MainMenuButtonWidget(Gtk.MenuButton):
     def __init__(self):
         super().__init__()
         # Create MainMenu Button Widget
-        self.set_icon_name("com.mudeprolinux.whakarere-hamburger-menu-symbolic")
+        self.set_icon_name("open-menu-symbolic")
         self.set_tooltip_text("Main Menu")
         self.set_has_frame(False)
         self.set_direction(Gtk.ArrowType.DOWN)
