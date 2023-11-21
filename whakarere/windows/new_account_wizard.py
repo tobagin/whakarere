@@ -56,7 +56,7 @@ class AccountWizardWindow(Adw.Window):
         self.present()
     
     def move_to_qrcode_page(self, button):
-        qrcode_page = QrManagerPage(self.app_manager, self.session_id)
+        qrcode_page = QrManagerPage(self, self.app_manager, self.session_id)
         self.navigationview.push(qrcode_page)
         self.subtitle.set_text("Scan the QR Code with your phone")
         self.next_button.set_sensitive(False)

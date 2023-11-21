@@ -12,7 +12,7 @@ import threading, time, requests, qrcode
 from io import BytesIO
 
 class QrManagerPage(Adw.NavigationPage):
-    def __init__(self, app_manager, session_id):
+    def __init__(self, aww, app_manager, session_id):
         super().__init__()
         self.set_title("Whakarere")
         api_key = "your_global_api_key_here"
