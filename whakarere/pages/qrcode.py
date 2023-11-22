@@ -18,6 +18,7 @@ class QrManagerPage(Adw.NavigationPage):
         api_key = "your_global_api_key_here"
         self.api_url = "http://localhost:3000"
         self.headers = { 'x-api-key': api_key }
+        self.aww = aww
         self.app_manager = app_manager
         self.session_id = session_id
         print(f"QrManagerPage Session ID: {self.session_id}")
@@ -93,5 +94,4 @@ class QrManagerPage(Adw.NavigationPage):
     def check_session_status_thread(self, session_id):
         while not self.check_session_status(session_id):
             time.sleep(2)
-        self.app_manager.main_window.navigation_view.pop()
-        self.app_manager.main_window.session_manager_page.refresh_listview()
+        self.aww.next_button.show()

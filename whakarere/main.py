@@ -27,7 +27,7 @@ from time import sleep
 
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
-from whakarere.windows.whakarere import WhakarereWindow
+from whakarere.windows.whakarere import WhakarereMainWindow
 from gi.repository import Gio, Adw, Gtk, Gdk
 
 # Define the path to your icons
@@ -48,7 +48,7 @@ class WhakarereApplication(Adw.Application):
     def do_activate(self):
         self.window = self.props.active_window
         if not self.window:
-            self.window = WhakarereWindow(self, debug=self.debug, dev=self.dev)
+            self.window = WhakarereMainWindow(self, debug=self.debug, dev=self.dev)
         self.window.present()
 
     def do_startup(self):

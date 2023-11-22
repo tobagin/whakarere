@@ -7,14 +7,14 @@ from whakarere.widgets.titlebar import WindowTitlebarWidget
 from whakarere.widgets.main_menu import MainMenuButtonWidget
 from whakarere.types.account import AccountItem
 from whakarere.images.whatsapp_logo_alt import WhatsappLogoAlt
-from whakarere.windows.new_account_wizard import AccountWizardWindow
+from whakarere.windows.account_wizard import AccountWizardWindow
 from gi.repository import Gtk, Gdk, Gio, Adw, GdkPixbuf, GLib
 
 class SessionManagerPage2(Adw.NavigationPage):
-    def __init__(self, app_manager):
+    def __init__(self, window):
         super().__init__()
         self.set_title("Whakarere")
-        self.app_manager = app_manager
+        self.window = window
         self.set_can_pop(True)
         self.session_overlay = Gtk.Overlay()
 
@@ -35,16 +35,16 @@ class SessionManagerPage2(Adw.NavigationPage):
         self.add_session_button.connect("clicked", self.add_new_session)
         self.page_headerbar.pack_end(self.add_session_button)
 
-        if self.app_manager.is_dev():
+        if self.window.is_dev():
             self.terminate_all_sessions = Gtk.Button()
             self.terminate_all_sessions.set_label("T.A.S.") # Terminate All Sessions
             self.terminate_all_sessions.set_tooltip_text("Terminate All Sessions")
-            self.terminate_all_sessions.connect("clicked", self.app_manager.whatsapp_manager.terminate_all_sessions)
+            self.terminate_all_sessions.connect("clicked", self.window.whatsapp_manager.terminate_all_sessions)
             self.page_headerbar.pack_start(self.terminate_all_sessions)
 
         # Create Account List
         self.account_list = Gio.ListStore(item_type=AccountItem)
-        for session_id in self.app_manager.session_manager.get_session_ids():
+        for session_id in self.window.session_manager.get_session_ids():
             account = AccountItem(session_id)
             self.account_list.append(account)
 
@@ -137,9 +137,9 @@ class SessionManagerPage2(Adw.NavigationPage):
         button_bar.append(self.button_launch_session)
         button_bar.append(self.button_activate_session)
         button_bar.append(self.button_remove_session)
-        if self.app_manager.session_manager.get_session_ids_size() > 0:
+        if self.window.session_manager.get_session_ids_size() > 0:
             self.on_selection_changed(self.selection_model, None, None)
-            if self.app_manager.whatsapp_manager.check_session_status(self.selected_item.session_id):
+            if self.window.whatsapp_manager.check_session_status(self.selected_item.session_id):
                 self.button_launch_session.set_visible(True)
                 self.button_activate_session.set_visible(False)
             else:
@@ -167,7 +167,7 @@ class SessionManagerPage2(Adw.NavigationPage):
     def refresh_listview(self):
         # Update or refresh the data in the list store (modify as needed)
         self.account_list.remove_all()
-        for session_id in self.app_manager.session_manager.get_session_ids():
+        for session_id in self.window.session_manager.get_session_ids():
             account = AccountItem(session_id)
             self.account_list.append(account)
 
@@ -176,9 +176,9 @@ class SessionManagerPage2(Adw.NavigationPage):
         self.list_view.set_model(self.selection_model)
 
     def on_items_changed(self, list_store, position, removed, added):
-        if not removed and self.app_manager.session_manager.get_session_ids_size() > 0:
+        if not removed and self.window.session_manager.get_session_ids_size() > 0:
             self.on_selection_changed(self.selection_model, None, None)
-            if self.app_manager.whatsapp_manager.check_session_status(self.selected_item.session_id):
+            if self.window.whatsapp_manager.check_session_status(self.selected_item.session_id):
                 self.button_launch_session.set_visible(True)
                 self.button_activate_session.set_visible(False)
             else:
@@ -192,7 +192,7 @@ class SessionManagerPage2(Adw.NavigationPage):
         self.selected_item_position = selection_model.get_selected()
         self.selected_item = selection_model.get_selected_item()
         if self.selected_item is not None:
-            if self.app_manager.whatsapp_manager.check_session_status(self.selected_item.session_id):
+            if self.window.whatsapp_manager.check_session_status(self.selected_item.session_id):
                 self.button_launch_session.set_visible(True)
                 self.button_activate_session.set_visible(False)
             else:
@@ -200,13 +200,13 @@ class SessionManagerPage2(Adw.NavigationPage):
                 self.button_activate_session.set_visible(True)
 
     def add_new_session(self, button):
-        #self.app_manager.main_window.set_sensitive(False) # Disable main window 
+        #self.window.main_window.set_sensitive(False) # Disable main window 
         new_account_wizard = AccountWizardWindow(self.app_manager)
         new_account_wizard.set_visible(True)
 
     def remove_selected_session(self, button):
         # Create a new message dialog
-        dialog = Adw.MessageDialog(modal=True, transient_for=self.app_manager.main_window)
+        dialog = Adw.MessageDialog(modal=True, transient_for=self.window.main_window)
         dialog.set_heading("Delete Session")
         dialog.set_body("Are you sure you want to delete the session?")
 
@@ -226,8 +226,8 @@ class SessionManagerPage2(Adw.NavigationPage):
     def on_response(self, dialog, response):
         if response == "delete":
             self.account_list.remove(self.selected_item_position)
-            self.app_manager.session_manager.remove_session(self.selected_item.session_id)
-            self.app_manager.whatsapp_manager.terminate_session(self.selected_item.session_id)
+            self.window.session_manager.remove_session(self.selected_item.session_id)
+            self.window.whatsapp_manager.terminate_session(self.selected_item.session_id)
             self.on_selection_changed(self.selection_model, None, None)
         elif response == "cancel":
             pass
@@ -235,20 +235,20 @@ class SessionManagerPage2(Adw.NavigationPage):
 
     def launch_selected_session(self, button):
         if self.selected_item is not None:
-            self.app_manager.session_manager.set_current_session(self.selected_item.session_id)
-            self.app_manager.navigate_to_whatsapp_messenger_page(self.selected_item.session_id)
+            self.window.session_manager.set_current_session(self.selected_item.session_id)
+            self.window.navigate_to_whatsapp_messenger_page(self.selected_item.session_id)
         
     def activate_selected_session(self, button):
         if self.selected_item is not None:
-            self.app_manager.session_manager.set_current_session(self.selected_item.session_id)
-            self.app_manager.navigate_to_qr_manager_page(self.selected_item.session_id)
+            self.window.session_manager.set_current_session(self.selected_item.session_id)
+            self.window.navigate_to_qr_manager_page(self.selected_item.session_id)
 
     def bind_function(self, factory, list_item):
         model = list_item.get_item()
         result = self.account_list.find(model)
         position = result.position
         if model is not None:
-            is_session_active = self.app_manager.whatsapp_manager.check_session_status(model.session_id)
+            is_session_active = self.window.whatsapp_manager.check_session_status(model.session_id)
             print(is_session_active)
             if is_session_active:
                 hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -259,8 +259,8 @@ class SessionManagerPage2(Adw.NavigationPage):
                 avatar.set_margin_bottom(5)
                 avatar.set_margin_start(5)
                 avatar.set_halign(Gtk.Align.START)
-                userid = self.app_manager.whatsapp_manager.get_user_id(model.session_id)
-                response = requests.get(self.app_manager.whatsapp_manager.get_user_profile_picture(userid, model.session_id))
+                userid = self.window.whatsapp_manager.get_user_id(model.session_id)
+                response = requests.get(self.window.whatsapp_manager.get_user_profile_picture(userid, model.session_id))
                 response.raise_for_status()
                 loader = GdkPixbuf.PixbufLoader()
                 loader.write(response.content)
@@ -268,7 +268,7 @@ class SessionManagerPage2(Adw.NavigationPage):
                 avatar_image = Gdk.Texture.new_for_pixbuf(loader.get_pixbuf())
                 avatar.set_custom_image(avatar_image)
                 hbox.append(avatar)
-                label = Gtk.Label(label=f"<b>{self.app_manager.whatsapp_manager.get_user_name(model.session_id)}</b>")
+                label = Gtk.Label(label=f"<b>{self.window.whatsapp_manager.get_user_name(model.session_id)}</b>")
                 label.set_use_markup(True)
                 hbox.append(label)
                 list_item.set_child(hbox)

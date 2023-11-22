@@ -1,4 +1,5 @@
 import gi
+import base64
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -8,10 +9,11 @@ gi.require_version("Gdk", "4.0")
 from gi.repository import Gtk, Adw, GdkPixbuf, Gdk, GLib
 from whakarere.widgets.main_menu import MainMenuButtonWidget
 from whakarere.widgets.titlebar import WindowTitlebarWidget
+from whakarere.images.whatsapp_logo import WhatsappLogo
 import threading, time, requests, qrcode, json, datetime
 from io import BytesIO
 
-class NewAccountFirstPage(Adw.NavigationPage):
+class SessionSync(Adw.NavigationPage):
     def __init__(self, aww, app_manager):
         super().__init__()
         self.set_title("Whakarere")
@@ -19,15 +21,18 @@ class NewAccountFirstPage(Adw.NavigationPage):
         self.app_manager = app_manager
         self.set_can_pop(True)
 
-        image = Gtk.Image.new_from_icon_name("com.mudeprolinux.whakarere")
+        image_data = base64.b64decode(WhatsappLogo.base64image)
+        input_stream = io.BytesIO(image_data)
+        pixbuf = GdkPixbuf.Pixbuf.new_from_stream(input_stream, None)
+        image = Gtk.Image.new_from_pixbuf(pixbuf)
         image.set_pixel_size(120)
-        label = Gtk.Label(label="Welcome to Whakarere")
+        label = Gtk.Label(label="Syncing with WhatsApp")
         label.set_halign(Gtk.Align.CENTER)
-        label2 = Gtk.Label(label="Let me create a new session and I'll help you link it to your WhatsApp account.")
+        label2 = Gtk.Label(label="Please wait...")
         label2.set_halign(Gtk.Align.CENTER)
-        self.label3 = Gtk.Label(label="Creating session...")
-        self.label3.set_halign(Gtk.Align.CENTER)
+        self.label3 = Gtk.Label(label="Loading chats...")
         self.label3.set_margin_top(-20)
+        self.label3.set_halign(Gtk.Align.CENTER)
         self.progress_bar = Gtk.ProgressBar()
         self.progress_bar.set_fraction(0.0)
         self.progress_bar.set_show_text(False)
@@ -52,19 +57,19 @@ class NewAccountFirstPage(Adw.NavigationPage):
         self.label3.set_text("Creating session...")
         for i in range(1, 25):
             self.progress_bar.set_fraction(i / 100)
-            time.sleep(0.2)
+            time.sleep(0.1)
         self.label3.set_text("Launching session...")
         for i in range(26, 50):
             self.progress_bar.set_fraction(i / 100)
-            time.sleep(0.2)
+            time.sleep(0.1)
         self.label3.set_text("Waiting for session activation...")
         for i in range(51, 75):
             self.progress_bar.set_fraction(i / 100)
-            time.sleep(0.2)
+            time.sleep(0.1)
         self.label3.set_text("Capturing Qr code...")
         for i in range(76, 101):
             self.progress_bar.set_fraction(i / 100)
-            time.sleep(0.2)
-        self.label3.set_text("Done!")
+            time.sleep(0.1)
+        self.label3.set_text("Done! Please go to the next page to scan the QR code with your phone.")
         self.aww.session_id = self.session_id
-        self.aww.navigate_to_qr_code()
+        self.aww.next_button.set_sensitive(True)
