@@ -55,7 +55,7 @@ whakarere_images = [
 install_data(whakarere_images, install_dir: whakarere_dir / 'images', install_mode: 'rwxr-xr-x')
 
 whakarere_managers = [
-  'managers/app.py',
+  'managers/config.py',
   'managers/session.py',
   'managers/whatsapp.py',
 ]

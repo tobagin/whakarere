@@ -46,8 +46,8 @@ modules:
       - ln -s /app/lib64/chromium-browser/chromium-launcher.sh /app/bin/chromium-browser
     sources:
       - type: archive
-        url: https://github.com/PF4Public/ungoogled-chromium-bin/releases/download/118.0.5993.117/x86-64.tar.bz2
-        sha256: d29ae07ba16a95e9805c4687a35faec588eb90c44fd5ff0a434f0595ac34ae58
+        url: https://github.com/PF4Public/ungoogled-chromium-bin/releases/download/121.0.6167.184/x86-64.tar.bz2
+        sha256: 3bf04738b830d420aa94245fe9211abea45e195994a75478c00e58ba3bb2d01e
 
   - name: libminizip
     buildsystem: simple
