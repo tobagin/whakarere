@@ -1,7 +1,7 @@
 {
     "app-id" : "com.mudeprolinux.whakarere",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "45",
+    "runtime-version" : "47",
     "sdk" : "org.gnome.Sdk",
     "command" : "whakarere",
     "finish-args" : [
