@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="whakarere">
+  <schema id="com.mudeprolinux.whakarere" path="/com/mudeprolinux/whakarere/">
+    <key name="window-width" type="i">
+      <default>1024</default>
+      <summary>Default window width</summary>
+      <description>Default width of the main window</description>
+    </key>
+    <key name="window-height" type="i">
+      <default>768</default>
+      <summary>Default window height</summary>
+      <description>Default height of the main window</description>
+    </key>
+    <key name="window-maximized" type="b">
+      <default>false</default>
+      <summary>Window maximized state</summary>
+      <description>Whether the window is maximized</description>
+    </key>
+    <key name="theme" type="s">
+      <choices>
+        <choice value="follow-system"/>
+        <choice value="light"/>
+        <choice value="dark"/>
+      </choices>
+      <default>"follow-system"</default>
+      <summary>Application theme</summary>
+      <description>The theme to use for the application interface</description>
+    </key>
+    <key name="persistent-cookies" type="b">
+      <default>true</default>
+      <summary>Save login data</summary>
+      <description>Whether to persist cookies and login data between sessions</description>
+    </key>
+    <key name="developer-tools" type="b">
+      <default>false</default>
+      <summary>Enable developer tools</summary>
+      <description>Whether to enable WebKit developer tools and context menu</description>
+    </key>
+  </schema>
+</schemalist>

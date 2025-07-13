@@ -1,0 +1,38 @@
+# Build directories
+builddir/
+flatpak-build/
+.flatpak-builder/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Flatpak artifacts
+*.flatpak
+export/
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+
+# Logs
+*.log

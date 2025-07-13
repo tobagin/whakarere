@@ -1,0 +1,49 @@
+using Gtk 4.0;
+using Adw 1;
+
+template $WhakarereSettingsDialog : Adw.PreferencesDialog {
+  title: _("Settings");
+  content-width: 400;
+  content-height: 300;
+
+  Adw.PreferencesPage {
+    title: _("General");
+    icon-name: "preferences-system-symbolic";
+
+    Adw.PreferencesGroup appearance_group {
+      title: _("Appearance");
+
+      Adw.ComboRow theme_row {
+        title: _("Theme");
+        subtitle: _("Choose the application theme");
+        model: Gtk.StringList theme_list {
+          strings [
+            _("Follow System"),
+            _("Light"),
+            _("Dark")
+          ]
+        };
+      }
+    }
+
+    Adw.PreferencesGroup privacy_group {
+      title: _("Privacy");
+
+      Adw.SwitchRow persistent_cookies_row {
+        title: _("Save Login Data");
+        subtitle: _("Keep you logged in between sessions");
+        active: true;
+      }
+    }
+
+    Adw.PreferencesGroup webview_group {
+      title: _("Web View");
+
+      Adw.SwitchRow developer_tools_row {
+        title: _("Enable Developer Tools");
+        subtitle: _("Allow right-click context menu and developer tools");
+        active: false;
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+src/whakarere/application.py
+src/whakarere/window.py
+data/com.mudeprolinux.whakarere.desktop.in
+data/com.mudeprolinux.whakarere.metainfo.xml.in
