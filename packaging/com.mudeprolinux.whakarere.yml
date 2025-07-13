@@ -16,6 +16,8 @@ finish-args:
   - --share=network
   # PulseAudio
   - --socket=pulseaudio
+  # Notifications support
+  - --talk-name=org.freedesktop.Notifications
 
 cleanup:
   - /include
@@ -43,5 +45,4 @@ modules:
     sources:
       - type: git
         url: https://github.com/tobagin/whakarere.git
-        tag: v0.1.1
-        commit: b5ce01a5089e7856eaf4705213f500ced8f26086
+        tag: v0.1.2

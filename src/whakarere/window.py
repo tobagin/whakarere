@@ -36,6 +36,9 @@ class WhakarereWindow(Adw.ApplicationWindow):
         self._setup_actions()
         self._setup_webview()
         self._apply_settings()
+        
+        # Connect close event to background running
+        self.connect("close-request", self._on_close_request)
         print("DEBUG: Window __init__ completed")
     
     def _setup_actions(self):
@@ -97,11 +100,20 @@ class WhakarereWindow(Adw.ApplicationWindow):
         webkit_settings.set_user_agent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         print("DEBUG: WebView settings configured")
         
+        # Set up script message handler for notifications
+        user_content_manager = self.webview.get_user_content_manager()
+        user_content_manager.connect("script-message-received::notification", self._on_notification_message)
+        user_content_manager.register_script_message_handler("notification")
+        print("DEBUG: Script message handler registered")
+        
         # Add WebView to container with expand properties
         self.webview.set_vexpand(True)
         self.webview.set_hexpand(True)
         self.webview_container.append(self.webview)
         print("DEBUG: WebView added to container")
+        
+        # Connect to page load events to inject JavaScript
+        self.webview.connect("load-changed", self._on_load_changed)
         
         # Load WhatsApp Web
         self.webview.load_uri("https://web.whatsapp.com")
@@ -143,3 +155,269 @@ class WhakarereWindow(Adw.ApplicationWindow):
         """Handle about action."""
         about_dialog = create_about_dialog(self)
         about_dialog.present(self)
+    
+    def _on_close_request(self, window):
+        """Handle window close request - hide instead of quit."""
+        print("DEBUG: Window close request received")
+        return self.app.on_window_delete_event()
+    
+    def _on_load_changed(self, webview, load_event):
+        """Handle WebView load events to inject JavaScript for notifications."""
+        if load_event == WebKit.LoadEvent.FINISHED:
+            print("DEBUG: Page load finished, injecting JavaScript for message detection")
+            self._inject_notification_script()
+    
+    def _inject_notification_script(self):
+        """Inject JavaScript to detect new WhatsApp messages."""
+        js_script = """
+        (function() {
+            console.log('Whakarere: Notification script injected');
+            
+            let lastMessageCount = 0;
+            let isWindowFocused = true;
+            let lastNotificationTime = 0;
+            let lastMessageText = '';
+            
+            // Check if window is focused
+            window.addEventListener('focus', () => { 
+                isWindowFocused = true; 
+                console.log('Whakarere: Window focused');
+            });
+            window.addEventListener('blur', () => { 
+                isWindowFocused = false; 
+                console.log('Whakarere: Window blurred');
+            });
+            
+            
+            // Simple DOM check for debugging
+            function inspectDOM() {
+                const unreadElements = document.querySelectorAll('[data-icon="unread-count"], [data-testid="unread-count"]');
+                if (unreadElements.length > 0) {
+                    console.log('Whakarere: Found', unreadElements.length, 'unread indicators');
+                }
+            }
+            
+            function checkForNewMessages() {
+                try {
+                    let totalUnread = 0;
+                    let hasNewMessages = false;
+                    let foundElements = [];
+                    
+                    // Enhanced detection with multiple approaches
+                    const detectionMethods = [
+                        // Method 1: Standard unread count selectors
+                        () => {
+                            const selectors = [
+                                '[data-icon="unread-count"]',
+                                '[data-testid="unread-count"]', 
+                                'span[data-icon="unread-count"]'
+                            ];
+                            let count = 0;
+                            for (const selector of selectors) {
+                                const elements = document.querySelectorAll(selector);
+                                elements.forEach(el => {
+                                    const text = el.textContent || el.innerText;
+                                    const num = parseInt(text?.replace(/[^0-9]/g, '')) || 0;
+                                    if (num > 0) {
+                                        count += num;
+                                        foundElements.push({selector, text, num});
+                                    }
+                                });
+                            }
+                            return count;
+                        },
+                        
+                        // Method 2: Aria-label based detection
+                        () => {
+                            const elements = document.querySelectorAll('[aria-label*="unread"], [aria-label*="message"]');
+                            let count = 0;
+                            elements.forEach(el => {
+                                const ariaLabel = el.getAttribute('aria-label') || '';
+                                const matches = ariaLabel.match(/\\d+/g);
+                                if (matches) {
+                                    const num = parseInt(matches[0]) || 0;
+                                    if (num > 0) {
+                                        count += num;
+                                        foundElements.push({method: 'aria-label', ariaLabel, num});
+                                    }
+                                }
+                            });
+                            return count;
+                        },
+                        
+                        // Method 3: Visual indicator dots
+                        () => {
+                            const indicators = document.querySelectorAll('[data-icon="unread"], span[data-icon="unread"]');
+                            if (indicators.length > 0) {
+                                foundElements.push({method: 'visual-dots', count: indicators.length});
+                                return indicators.length;
+                            }
+                            return 0;
+                        },
+                        
+                        // Method 4: Chat container analysis
+                        () => {
+                            const chatContainers = document.querySelectorAll('div[data-testid="cell-frame-container"]');
+                            let count = 0;
+                            chatContainers.forEach(container => {
+                                const spans = container.querySelectorAll('span');
+                                spans.forEach(span => {
+                                    const text = span.textContent?.trim();
+                                    if (text && /^\\d+$/.test(text)) {
+                                        const num = parseInt(text);
+                                        if (num > 0 && num < 100) { // Reasonable message count
+                                            count += num;
+                                            foundElements.push({method: 'chat-container', text, num});
+                                        }
+                                    }
+                                });
+                            });
+                            return count;
+                        }
+                    ];
+                    
+                    // Run all detection methods
+                    for (const method of detectionMethods) {
+                        const methodCount = method();
+                        totalUnread += methodCount;
+                        if (methodCount > 0) hasNewMessages = true;
+                    }
+                    
+                    // Log detection results when there are changes
+                    if (totalUnread !== lastMessageCount) {
+                        console.log('Whakarere: Unread count changed:', totalUnread);
+                    }
+                    
+                    // Check for new message content
+                    const messageElements = document.querySelectorAll('[data-testid="msg-container"], [data-testid="conversation-panel-messages"] > div:last-child');
+                    let latestMessageText = '';
+                    if (messageElements.length > 0) {
+                        const lastMessage = messageElements[messageElements.length - 1];
+                        latestMessageText = lastMessage.textContent?.substring(0, 100) || '';
+                    }
+                    
+                    // Trigger notification based on multiple conditions
+                    const now = Date.now();
+                    const shouldNotify = !isWindowFocused && (
+                        (hasNewMessages && totalUnread > lastMessageCount) ||
+                        (latestMessageText && latestMessageText !== lastMessageText && latestMessageText.length > 0)
+                    ) && (now - lastNotificationTime) > 3000; // Reduced cooldown
+                    
+                    if (shouldNotify) {
+                        // Try to get the sender name
+                        let senderName = 'WhatsApp';
+                        const senderSelectors = [
+                            '[aria-selected="true"] [title]',
+                            '[data-testid="conversation-title"]',
+                            'header [data-testid="conversation-info-header"] span[title]',
+                            '._ao3e ._aou8 + div'
+                        ];
+                        
+                        for (const selector of senderSelectors) {
+                            const element = document.querySelector(selector);
+                            if (element) {
+                                senderName = element.textContent || element.getAttribute('title') || senderName;
+                                break;
+                            }
+                        }
+                        
+                        // Send notification
+                        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.notification) {
+                            window.webkit.messageHandlers.notification.postMessage({
+                                sender: senderName,
+                                message: totalUnread > 0 ? `${totalUnread} new message(s)` : 'New message received',
+                                count: totalUnread || 1
+                            });
+                            lastNotificationTime = now;
+                            console.log('Whakarere: Notification sent for:', senderName);
+                        }
+                    }
+                    
+                    lastMessageCount = totalUnread;
+                    lastMessageText = latestMessageText;
+                    
+                } catch (error) {
+                    console.error('Whakarere: Error checking messages:', error);
+                }
+            }
+            
+            // DOM inspection after 5 seconds (for debugging)
+            setTimeout(inspectDOM, 5000);
+            
+            // Check every 2 seconds for new messages
+            setInterval(checkForNewMessages, 2000);
+            
+            // Also listen for DOM changes with throttling
+            let timeoutId;
+            const observer = new MutationObserver((mutations) => {
+                // Check if any relevant changes occurred
+                const relevantMutation = mutations.some(mutation => {
+                    return mutation.type === 'childList' || 
+                           (mutation.type === 'attributes' && 
+                            ['aria-label', 'data-icon', 'data-testid', 'title'].includes(mutation.attributeName));
+                });
+                
+                if (relevantMutation) {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(checkForNewMessages, 500);
+                }
+            });
+            
+            // Start observing when the page is ready
+            function startObserving() {
+                if (document.body) {
+                    observer.observe(document.body, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['aria-label', 'data-icon', 'data-testid', 'title', 'class']
+                    });
+                    console.log('Whakarere: DOM observer started');
+                    
+                    // Initial check after observer starts
+                    setTimeout(checkForNewMessages, 1000);
+                } else {
+                    setTimeout(startObserving, 1000);
+                }
+            }
+            
+            startObserving();
+            console.log('Whakarere: Enhanced message detection initialized');
+        })();
+        """
+        
+        print("DEBUG: Executing JavaScript for message detection")
+        self.webview.evaluate_javascript(js_script, -1, None, None, None, self._on_javascript_result, None)
+    
+    def _on_javascript_result(self, webview, task, user_data):
+        """Handle JavaScript execution result."""
+        try:
+            webview.evaluate_javascript_finish(task)
+            print("DEBUG: JavaScript injection completed successfully")
+        except Exception as e:
+            print(f"DEBUG: JavaScript injection failed: {e}")
+    
+    def _on_notification_message(self, user_content_manager, message):
+        """Handle notification messages from JavaScript."""
+        try:
+            # Get the message data
+            js_value = message.get_js_value()
+            if js_value.is_object():
+                sender = js_value.object_get_property("sender").to_string() if js_value.object_has_property("sender") else "WhatsApp"
+                msg_text = js_value.object_get_property("message").to_string() if js_value.object_has_property("message") else "New message"
+                count = js_value.object_get_property("count").to_number() if js_value.object_has_property("count") else 1
+                
+                print(f"DEBUG: Received notification request - Sender: {sender}, Message: {msg_text}, Count: {count}")
+                
+                # Send the notification through the application
+                notification_title = f"New message from {sender}" if sender != "WhatsApp" else "WhatsApp"
+                notification_body = f"{msg_text} ({int(count)} unread)" if count > 1 else msg_text
+                
+                self.app.send_notification(notification_title, notification_body)
+            else:
+                print("DEBUG: Received non-object notification message")
+                
+        except Exception as e:
+            print(f"DEBUG: Error handling notification message: {e}")
+            # Fallback notification
+            self.app.send_notification("WhatsApp", "New message received")

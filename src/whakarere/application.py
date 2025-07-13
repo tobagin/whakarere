@@ -11,7 +11,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
 
-from gi.repository import Gtk, Adw, Gio
+from gi.repository import Gtk, Adw, Gio, GLib
 
 BUS_NAME = "com.mudeprolinux.whakarere"
 
@@ -21,18 +21,31 @@ class WhakarereApplication(Adw.Application):
     
     def __init__(self):
         super().__init__(application_id=BUS_NAME)
+        self.main_window = None
+        self.notification_enabled = True
+        
+        # Set up application to run in background
+        self.set_flags(Gio.ApplicationFlags.HANDLES_OPEN)
         
     def do_activate(self):
         """Called when the application is activated."""
         print("DEBUG: Application activated")
-        win = self.props.active_window
-        if not win:
+        
+        # If main window exists but is hidden, show it
+        if self.main_window and not self.main_window.get_visible():
+            print("DEBUG: Showing existing hidden window")
+            self.main_window.present()
+            return
+        
+        # Create new window if it doesn't exist
+        if not self.main_window:
             print("DEBUG: Creating new window")
             from .window import WhakarereWindow
-            win = WhakarereWindow(self)
+            self.main_window = WhakarereWindow(self)
             print("DEBUG: Window created")
+        
         print("DEBUG: Presenting window")
-        win.present()
+        self.main_window.present()
         print("DEBUG: Window presented")
 
     def do_startup(self):
@@ -63,6 +76,80 @@ class WhakarereApplication(Adw.Application):
         
         if not resource_loaded:
             print("ERROR: No UI resources found!")
+        
+        # Set up application actions
+        self._setup_actions()
+    
+    def _setup_actions(self):
+        """Set up application-level actions."""
+        print("DEBUG: Setting up application actions")
+        
+        # Show window action (for notifications)
+        show_action = Gio.SimpleAction.new("show-window", None)
+        show_action.connect("activate", self._on_show_window_action)
+        self.add_action(show_action)
+        
+        # Quit action
+        quit_action = Gio.SimpleAction.new("quit", None)
+        quit_action.connect("activate", self._on_quit_action)
+        self.add_action(quit_action)
+        
+        # Set up keyboard shortcuts
+        self.set_accels_for_action("app.quit", ["<Control>q"])
+        
+        print("DEBUG: Application actions set up")
+    
+    def _on_show_window_action(self, action, param):
+        """Handle show window action from notification."""
+        print("DEBUG: Show window action triggered")
+        self.do_activate()
+    
+    def _on_quit_action(self, action, param):
+        """Handle quit action."""
+        print("DEBUG: Quit action triggered")
+        self.quit_application()
+    
+    def send_notification(self, title, message, icon_name="com.mudeprolinux.whakarere"):
+        """Send a desktop notification."""
+        if not self.notification_enabled:
+            return
+            
+        try:
+            notification = Gio.Notification()
+            notification.set_title(title)
+            notification.set_body(message)
+            
+            # Add action to show window when notification is clicked
+            notification.add_button("Show", "app.show-window")
+            
+            # Use simple ID for portal compatibility
+            notification_id = f"msg-{int(GLib.get_monotonic_time())}"
+            super().send_notification(notification_id, notification)
+            
+        except Exception as e:
+            print(f"Failed to send notification: {e}")
+    
+    def on_window_delete_event(self):
+        """Handle window close event - hide instead of quit."""
+        print("DEBUG: Window close requested - hiding window instead of quitting")
+        if self.main_window:
+            self.main_window.set_visible(False)
+        
+        # Send notification to inform user app is running in background
+        self.send_notification(
+            "Whakarere", 
+            "Application is running in the background. Click here to show the window.",
+            "com.mudeprolinux.whakarere"
+        )
+        return True  # Prevent default close behavior
+    
+    def quit_application(self):
+        """Actually quit the application."""
+        print("DEBUG: Quitting application completely")
+        if self.main_window:
+            self.main_window.destroy()
+        self.quit()
+    
 
 
 def main():
