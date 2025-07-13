@@ -1,7 +1,7 @@
 # Karere - GTK4 WhatsApp Client
 
 <p align="center">
-  <img src="data/icons/hicolor/128x128/apps/com.mudeprolinux.whakarere.png" alt="Whakarere" width="128" height="128">
+  <img src="data/icons/hicolor/128x128/apps/io.github.tobagin.karere.png" alt="Karere" width="128" height="128">
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 
 ## Overview
 
-Whakarere is a native GTK4 application that provides a seamless WhatsApp Web experience integrated with your Linux desktop. Built with modern technologies like Libadwaita, Blueprint UI, and WebKitGTK 6.0, it offers a clean, responsive interface that follows GNOME design principles.
+Karere is a native GTK4 application that provides a seamless WhatsApp Web experience integrated with your Linux desktop. Built with modern technologies like Libadwaita, Blueprint UI, and WebKitGTK 6.0, it offers a clean, responsive interface that follows GNOME design principles.
 
 ## Features
 
@@ -95,14 +95,14 @@ Whakarere is a native GTK4 application that provides a seamless WhatsApp Web exp
    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
    ```
 
-3. **Install Whakarere**:
+3. **Install Karere**:
    ```bash
-   flatpak install --user com.mudeprolinux.whakarere
+   flatpak install --user io.github.tobagin.karere
    ```
 
 4. **Run the application**:
    ```bash
-   flatpak run com.mudeprolinux.whakarere
+   flatpak run io.github.tobagin.karere
    ```
 
 ### Development Installation
@@ -110,10 +110,10 @@ Whakarere is a native GTK4 application that provides a seamless WhatsApp Web exp
 For development or testing the latest features:
 
 ```bash
-git clone https://github.com/tobagin/whakarere.git
-cd whakarere
+git clone https://github.com/tobagin/karere.git
+cd karere
 ./build.sh --dev --install
-flatpak run com.mudeprolinux.whakarere
+flatpak run io.github.tobagin.karere
 ```
 
 ## Building from Source
@@ -131,8 +131,8 @@ flatpak run com.mudeprolinux.whakarere
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/tobagin/whakarere.git
-   cd whakarere
+   git clone https://github.com/tobagin/karere.git
+   cd karere
    ```
 
 2. **Development build**:
@@ -150,7 +150,7 @@ For detailed build instructions, see [BUILD.md](BUILD.md).
 ## Usage
 
 ### First Launch
-1. Launch Whakarere from your application menu or command line
+1. Launch Karere from your application menu or command line
 2. Log in to WhatsApp Web using your phone's QR code scanner
 3. Your session will be saved for future launches
 
@@ -182,8 +182,8 @@ Access settings via the hamburger menu to configure:
 
 ### Project Structure
 ```
-whakarere/
-├── src/whakarere/          # Python application code
+karere/
+├── src/karere/          # Python application code
 │   ├── ui/                 # Blueprint UI templates
 │   ├── application.py      # Main application class
 │   ├── window.py          # Main window implementation
@@ -217,12 +217,12 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 
 ## License
 
-Whakarere is licensed under the **GPL-3.0-or-later** license. See [LICENSE](LICENSE) for details.
+Karere is licensed under the **GPL-3.0-or-later** license. See [LICENSE](LICENSE) for details.
 
 ## Support
 
-- **Issues**: Report bugs and feature requests on [GitHub Issues](https://github.com/tobagin/whakarere/issues)
-- **Discussions**: Join community discussions on [GitHub Discussions](https://github.com/tobagin/whakarere/discussions)
+- **Issues**: Report bugs and feature requests on [GitHub Issues](https://github.com/tobagin/karere/issues)
+- **Discussions**: Join community discussions on [GitHub Discussions](https://github.com/tobagin/karere/discussions)
 - **Website**: Visit [mudeprolinux.com](http://www.mudeprolinux.com/) for more information
 
 ## Acknowledgments
