@@ -47,5 +47,5 @@ modules:
     sources:
       - type: git
         url: https://github.com/tobagin/whakarere.git
-        tag: v0.1.3
-        commit: 825626bba41884e4de86527de30c18019a277c97
+        tag: v0.1.4
+        commit: bf19c7878789dbbbf60c254b5fc12d013042bce2
