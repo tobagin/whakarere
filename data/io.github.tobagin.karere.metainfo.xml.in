@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
   <id>io.github.tobagin.karere</id>
+  
+  <!-- Flatpak ID transition support -->
+  <provides>
+    <id>com.mudeprolinux.whakarere</id>
+  </provides>
+  <replaces>
+    <id>com.mudeprolinux.whakarere</id>
+  </replaces>
+  
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   
@@ -52,6 +61,18 @@
   </content_rating>
   
   <releases>
+    <release version="0.1.6" date="2025-01-13">
+      <description>
+        <p>Flatpak ID transition metadata and compatibility improvements</p>
+        <ul>
+          <li>Added Flatpak ID transition support from com.mudeprolinux.whakarere to io.github.tobagin.karere</li>
+          <li>Added provides and replaces tags for seamless user migration</li>
+          <li>Improved compatibility for users upgrading from the old Whakarere ID</li>
+          <li>Prepared metadata for Flathub resubmission under new ID</li>
+          <li>Enhanced metainfo structure for better app store compatibility</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.5" date="2025-01-13">
       <description>
         <p>Major rebranding: Application renamed from Whakarere to Karere with new app ID</p>
