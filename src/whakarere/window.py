@@ -115,6 +115,10 @@ class WhakarereWindow(Adw.ApplicationWindow):
         # Connect to page load events to inject JavaScript
         self.webview.connect("load-changed", self._on_load_changed)
         
+        # Set up download handling
+        self.setup_download_directory()
+        self.webview.connect("download-requested", self._on_download_requested)
+        
         # Load WhatsApp Web
         self.webview.load_uri("https://web.whatsapp.com")
         print("DEBUG: Loading WhatsApp Web")
@@ -421,3 +425,108 @@ class WhakarereWindow(Adw.ApplicationWindow):
             print(f"DEBUG: Error handling notification message: {e}")
             # Fallback notification
             self.app.send_notification("WhatsApp", "New message received")
+
+    def setup_download_directory(self):
+        """Set up the downloads directory."""
+        try:
+            # Use the user's Downloads directory
+            downloads_dir = os.path.join(os.path.expanduser('~'), 'Downloads')
+            self.downloads_dir = downloads_dir
+            print(f"DEBUG: Downloads directory: {self.downloads_dir}")
+        except Exception as e:
+            print(f"DEBUG: Error setting up downloads directory: {e}")
+            # Fallback to home directory
+            self.downloads_dir = os.path.expanduser('~')
+
+    def _on_download_requested(self, webview, download):
+        """Handle download requests from WhatsApp Web."""
+        try:
+            print("DEBUG: Download requested")
+            
+            # Get download info
+            uri = download.get_request().get_uri()
+            suggested_filename = download.get_response().get_suggested_filename()
+            
+            print(f"DEBUG: Download URI: {uri}")
+            print(f"DEBUG: Suggested filename: {suggested_filename}")
+            
+            # Generate filename if none suggested
+            if not suggested_filename:
+                from urllib.parse import urlparse
+                parsed = urlparse(uri)
+                suggested_filename = os.path.basename(parsed.path) or "whatsapp_download"
+            
+            # Ensure unique filename
+            counter = 1
+            base_name, ext = os.path.splitext(suggested_filename)
+            file_path = os.path.join(self.downloads_dir, suggested_filename)
+            
+            while os.path.exists(file_path):
+                new_filename = f"{base_name}_{counter}{ext}"
+                file_path = os.path.join(self.downloads_dir, new_filename)
+                counter += 1
+            
+            print(f"DEBUG: Download path: {file_path}")
+            
+            # Set the download destination
+            download.set_destination(file_path)
+            
+            # Connect to download completion
+            download.connect("finished", self._on_download_finished)
+            download.connect("failed", self._on_download_failed)
+            
+            # Send notification about download start
+            if hasattr(self.app, 'send_notification'):
+                self.app.send_notification(
+                    "Download Started",
+                    f"Starting download: {suggested_filename}"
+                )
+            
+            return True  # Allow the download
+            
+        except Exception as e:
+            print(f"DEBUG: Error handling download request: {e}")
+            return False
+
+    def _on_download_finished(self, download):
+        """Handle completed downloads."""
+        try:
+            destination = download.get_destination()
+            if destination:
+                from urllib.parse import urlparse
+                parsed = urlparse(destination)
+                filename = os.path.basename(parsed.path)
+                
+                print(f"DEBUG: Download completed: {filename}")
+                
+                # Send completion notification
+                if hasattr(self.app, 'send_notification'):
+                    self.app.send_notification(
+                        "Download Complete",
+                        f"Downloaded: {filename}"
+                    )
+                    
+        except Exception as e:
+            print(f"DEBUG: Error handling download completion: {e}")
+
+    def _on_download_failed(self, download, error):
+        """Handle failed downloads."""
+        try:
+            destination = download.get_destination()
+            filename = "file"
+            if destination:
+                from urllib.parse import urlparse
+                parsed = urlparse(destination)
+                filename = os.path.basename(parsed.path)
+            
+            print(f"DEBUG: Download failed: {filename}, Error: {error}")
+            
+            # Send failure notification
+            if hasattr(self.app, 'send_notification'):
+                self.app.send_notification(
+                    "Download Failed",
+                    f"Failed to download: {filename}"
+                )
+                
+        except Exception as e:
+            print(f"DEBUG: Error handling download failure: {e}")

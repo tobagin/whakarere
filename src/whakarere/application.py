@@ -129,6 +129,7 @@ class WhakarereApplication(Adw.Application):
         except Exception as e:
             print(f"Failed to send notification: {e}")
     
+    
     def on_window_delete_event(self):
         """Handle window close event - hide instead of quit."""
         print("DEBUG: Window close requested - hiding window instead of quitting")
