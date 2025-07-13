@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.mudeprolinux.whakarere</id>
+  <id>io.github.tobagin.karere</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   
-  <name>Whakarere</name>
+  <name>Karere</name>
   <summary>GTK4 WhatsApp Client</summary>
   
   <description>
     <p>
-      Whakarere is a modern GTK4 WhatsApp client that provides a native desktop experience
+      Karere is a modern GTK4 WhatsApp client that provides a native desktop experience
       for WhatsApp Web. Built with Python, GTK4, and Libadwaita, it offers a clean and
       intuitive interface that integrates seamlessly with your Linux desktop.
     </p>
@@ -29,20 +29,20 @@
 
   <developer_name>Thiago Fernandes</developer_name>
   <url type="homepage">http://www.mudeprolinux.com/</url>
-  <url type="bugtracker">https://github.com/tobagin/whakarere/issues</url>
-  <url type="help">https://github.com/tobagin/whakarere/</url>
+  <url type="bugtracker">https://github.com/tobagin/karere/issues</url>
+  <url type="help">https://github.com/tobagin/karere/</url>
   
-  <launchable type="desktop-id">com.mudeprolinux.whakarere.desktop</launchable>
+  <launchable type="desktop-id">io.github.tobagin.karere.desktop</launchable>
   
   <screenshots>
     <screenshot type="default">
-      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/main-window.png?raw=true</image>
+      <image>https://github.com/tobagin/karere/blob/main/screenshots/main-window.png?raw=true</image>
     </screenshot>
     <screenshot>
-      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/about-dialog.png?raw=true</image>
+      <image>https://github.com/tobagin/karere/blob/main/screenshots/about-dialog.png?raw=true</image>
     </screenshot>
     <screenshot>
-      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/settings-dialog.png?raw=true</image>
+      <image>https://github.com/tobagin/karere/blob/main/screenshots/settings-dialog.png?raw=true</image>
     </screenshot>
   </screenshots>
   
@@ -52,6 +52,21 @@
   </content_rating>
   
   <releases>
+    <release version="0.1.5" date="2025-01-13">
+      <description>
+        <p>Major rebranding: Application renamed from Whakarere to Karere with new app ID</p>
+        <ul>
+          <li>Changed application name from "Whakarere" to "Karere" (Māori for messenger)</li>
+          <li>Updated app ID from com.mudeprolinux.whakarere to io.github.tobagin.karere</li>
+          <li>Replaced all application icons with new Karere branding</li>
+          <li>Updated Python package structure from whakarere to karere</li>
+          <li>Fixed UI template names and resource references for proper functionality</li>
+          <li>Updated all configuration files, manifests, and build scripts</li>
+          <li>Maintained full backward compatibility of features and settings</li>
+          <li>Updated documentation and project metadata</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.1" date="2025-01-13">
       <description>
         <p>Updated screenshots and improved presentation</p>

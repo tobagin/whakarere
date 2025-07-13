@@ -24,10 +24,10 @@ meson test -C builddir
 ### Development Commands
 ```bash
 # Run the application directly during development (after building)
-PYTHONPATH=src python3 -m whakarere.application
+PYTHONPATH=src python3 -m karere.application
 
 # Or run the main entry point
-python3 src/whakarere/main.py
+python3 src/karere/main.py
 
 # For development with Blueprint UI, you need to build first
 meson setup builddir
@@ -36,7 +36,7 @@ meson compile -C builddir
 
 ## Project Structure and Architecture
 
-**Whakarere** (version 0.1.0) is a modern GTK4/Libadwaita WhatsApp client restructured as a proper Python library with Meson build system.
+**Karere** (version 0.1.5) is a modern GTK4/Libadwaita WhatsApp client restructured as a proper Python library with Meson build system.
 
 ### Core Architecture
 - **Frontend**: Python3 + GTK4 + Libadwaita + WebKit WebView 6.0
@@ -46,11 +46,11 @@ meson compile -C builddir
 
 ### Project Structure
 ```
-whakarere/
-├── src/whakarere/          # Main Python package
+karere/
+├── src/karere/          # Main Python package
 │   ├── ui/                # Blueprint UI files
 │   │   ├── window.blp     # Main window Blueprint template
-│   │   ├── whakarere.gresource.xml  # GResource definition
+│   │   ├── karere.gresource.xml  # GResource definition
 │   │   └── meson.build    # UI build configuration
 │   ├── __init__.py         # Package metadata
 │   ├── application.py      # Main application class with GResource loading
@@ -63,7 +63,7 @@ whakarere/
 │   └── *.gschema.xml      # GSettings schema
 ├── po/                     # Internationalization
 ├── meson.build            # Main build configuration
-└── whakarere.in           # Executable script template
+└── karere.in           # Executable script template
 ```
 
 ### Key Components
@@ -78,8 +78,8 @@ whakarere/
 - Python 3 with GObject introspection
 
 ### Configuration
-- GSettings schema: `com.mudeprolinux.whakarere`
-- Application ID: `com.mudeprolinux.whakarere`
+- GSettings schema: `io.github.tobagin.karere`
+- Application ID: `io.github.tobagin.karere`
 - Author: Thiago Fernandes
 - License: GPL-3.0-or-later
 
@@ -94,7 +94,7 @@ whakarere/
 - Internationalization support (gettext)
 
 ### Blueprint UI System
-- UI defined in `src/whakarere/ui/window.blp` using Blueprint markup
+- UI defined in `src/karere/ui/window.blp` using Blueprint markup
 - Compiled to GTK UI files during build process using `blueprint-compiler`
 - Bundled into GResource file for efficient loading
 - Templates use `@Gtk.Template` decorator for automatic widget binding

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Whakarere Flatpak Build Script
+# Karere Flatpak Build Script
 # Usage: ./build.sh [--dev] [--install] [--force-clean]
 
 set -e
@@ -43,11 +43,11 @@ done
 
 # Determine which manifest to use
 if [ "$DEV_MODE" = true ]; then
-    MANIFEST="$PACKAGING_DIR/com.mudeprolinux.whakarere-dev.yml"
-    echo "🔧 Building Whakarere in DEVELOPMENT mode (local sources)"
+    MANIFEST="$PACKAGING_DIR/io.github.tobagin.karere-dev.yml"
+    echo "🔧 Building Karere in DEVELOPMENT mode (local sources)"
 else
-    MANIFEST="$PACKAGING_DIR/com.mudeprolinux.whakarere.yml"
-    echo "🚀 Building Whakarere in PRODUCTION mode (git sources)"
+    MANIFEST="$PACKAGING_DIR/io.github.tobagin.karere.yml"
+    echo "🚀 Building Karere in PRODUCTION mode (git sources)"
 fi
 
 # Check if manifest exists
@@ -74,9 +74,9 @@ flatpak-builder \
 
 echo ""
 if [ "$INSTALL_FLAG" = "--install" ]; then
-    echo "✅ Whakarere built and installed successfully!"
-    echo "🎯 Run with: flatpak run com.mudeprolinux.whakarere"
+    echo "✅ Karere built and installed successfully!"
+    echo "🎯 Run with: flatpak run io.github.tobagin.karere"
 else
-    echo "✅ Whakarere built successfully!"
+    echo "✅ Karere built successfully!"
     echo "💡 Add --install flag to install the application"
 fi

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gresources>
-  <gresource prefix="/com/mudeprolinux/whakarere">
+  <gresource prefix="/io/github/tobagin/karere">
     <file compressed="true" preprocess="xml-stripblanks">window.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">settings.ui</file>
   </gresource>

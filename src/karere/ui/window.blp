@@ -1,16 +1,16 @@
 using Gtk 4.0;
 using Adw 1;
 
-template $WhakarereWindow : Adw.ApplicationWindow {
+template $KarereWindow : Adw.ApplicationWindow {
   default-width: 1024;
   default-height: 768;
-  title: "Whakarere";
+  title: "Karere";
 
   content: Adw.ToolbarView {
     [top]
     Adw.HeaderBar headerbar {
       title-widget: Adw.WindowTitle window_title {
-        title: "Whakarere";
+        title: "Karere";
         subtitle: "GTK4 WhatsApp Client";
       };
 
@@ -39,7 +39,7 @@ menu main_menu {
     }
     
     item {
-      label: _("About Whakarere");
+      label: _("About");
       action: "app.about";
     }
   }

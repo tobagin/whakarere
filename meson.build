@@ -1,5 +1,5 @@
-project('whakarere',
-  version: '0.1.4',
+project('karere',
+  version: '0.1.5',
   license: 'GPL-3.0-or-later',
   meson_version: '>= 1.4.0',
   default_options: [
@@ -24,9 +24,9 @@ dependency('libadwaita-1', version: '>= 1.0')
 dependency('webkitgtk-6.0', version: '>= 2.40')
 
 # Application information
-application_id = 'com.mudeprolinux.whakarere'
+application_id = 'io.github.tobagin.karere'
 pkgdatadir = py_installation.get_install_dir()
-moduledir = py_installation.get_install_dir() / 'whakarere'
+moduledir = py_installation.get_install_dir() / 'karere'
 
 # Configuration data
 conf = configuration_data()
@@ -37,17 +37,17 @@ conf.set('pkgdatadir', pkgdatadir)
 conf.set('INSTALLED_PYTHONPATH', py_installation.get_install_dir())
 
 # Install Python modules
-install_subdir('src/whakarere', install_dir: py_installation.get_install_dir(), exclude_files: ['ui'])
+install_subdir('src/karere', install_dir: py_installation.get_install_dir(), exclude_files: ['ui'])
 
 # Process subdirectories
-subdir('src/whakarere/ui')
+subdir('src/karere/ui')
 subdir('data')
 subdir('po')
 
 # Generate executable script
 configure_file(
-  input: 'whakarere.in',
-  output: 'whakarere',
+  input: 'karere.in',
+  output: 'karere',
   configuration: conf,
   install: true,
   install_dir: get_option('bindir'),

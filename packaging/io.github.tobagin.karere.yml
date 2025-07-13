@@ -1,8 +1,8 @@
-app-id: com.mudeprolinux.whakarere
+app-id: io.github.tobagin.karere
 runtime: org.gnome.Platform
 runtime-version: '48'
 sdk: org.gnome.Sdk
-command: whakarere
+command: karere
 
 finish-args:
   # X11 and IPC access
@@ -42,10 +42,9 @@ modules:
         tag: v0.18.0
         commit: 07c9c9df9cd1b6b4454ecba21ee58211e9144a4b
 
-  - name: whakarere
+  - name: karere
     buildsystem: meson
     sources:
       - type: git
-        url: https://github.com/tobagin/whakarere.git
-        tag: v0.1.4
-        commit: bf19c7878789dbbbf60c254b5fc12d013042bce2
+        url: https://github.com/tobagin/karere.git
+        tag: v0.1.5

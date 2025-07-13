@@ -1,5 +1,5 @@
 """
-Settings dialog for Whakarere application.
+Settings dialog for Karere application.
 """
 
 import gi
@@ -10,11 +10,11 @@ gi.require_version("Adw", "1")
 from gi.repository import Gtk, Adw, Gio
 
 
-@Gtk.Template(resource_path='/com/mudeprolinux/whakarere/settings.ui')
-class WhakarereSettingsDialog(Adw.PreferencesDialog):
+@Gtk.Template(resource_path='/io/github/tobagin/karere/settings.ui')
+class KarereSettingsDialog(Adw.PreferencesDialog):
     """Settings dialog for configuring application preferences."""
     
-    __gtype_name__ = 'WhakarereSettingsDialog'
+    __gtype_name__ = 'KarereSettingsDialog'
     
     theme_row = Gtk.Template.Child()
     persistent_cookies_row = Gtk.Template.Child()
@@ -23,7 +23,7 @@ class WhakarereSettingsDialog(Adw.PreferencesDialog):
     def __init__(self, parent_window):
         super().__init__()
         self.parent_window = parent_window
-        self.settings = Gio.Settings.new("com.mudeprolinux.whakarere")
+        self.settings = Gio.Settings.new("io.github.tobagin.karere")
         
         self._setup_signals()
         self._load_settings()

@@ -21,9 +21,9 @@ endforeach
 # Compile GResource
 gnome = import('gnome')
 
-whakarere_resources = gnome.compile_resources(
-  'whakarere-resources',
-  'whakarere.gresource.xml',
+karere_resources = gnome.compile_resources(
+  'karere-resources',
+  'karere.gresource.xml',
   source_dir: meson.current_build_dir(),
   dependencies: ui_files,
   gresource_bundle: true,

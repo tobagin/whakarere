@@ -1,4 +1,4 @@
-# Whakarere - GTK4 WhatsApp Client
+# Karere - GTK4 WhatsApp Client
 
 <p align="center">
   <img src="data/icons/hicolor/128x128/apps/com.mudeprolinux.whakarere.png" alt="Whakarere" width="128" height="128">

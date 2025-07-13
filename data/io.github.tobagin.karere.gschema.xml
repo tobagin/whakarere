@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schemalist gettext-domain="whakarere">
-  <schema id="com.mudeprolinux.whakarere" path="/com/mudeprolinux/whakarere/">
+<schemalist gettext-domain="karere">
+  <schema id="io.github.tobagin.karere" path="/io/github/tobagin/karere/">
     <key name="window-width" type="i">
       <default>1024</default>
       <summary>Default window width</summary>

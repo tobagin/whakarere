@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Main application module for Whakarere.
+Main application module for Karere.
 """
 
 import gi
@@ -13,19 +13,22 @@ gi.require_version("WebKit", "6.0")
 
 from gi.repository import Gtk, Adw, Gio, GLib
 
-BUS_NAME = "com.mudeprolinux.whakarere"
+BUS_NAME = "io.github.tobagin.karere"
 
 
-class WhakarereApplication(Adw.Application):
-    """Main application class for Whakarere."""
+class KarereApplication(Adw.Application):
+    """Main application class for Karere."""
     
     def __init__(self):
+        print("DEBUG: KarereApplication.__init__ starting")
         super().__init__(application_id=BUS_NAME)
+        print(f"DEBUG: Application ID set to: {BUS_NAME}")
         self.main_window = None
         self.notification_enabled = True
         
         # Set up application to run in background
         self.set_flags(Gio.ApplicationFlags.HANDLES_OPEN)
+        print("DEBUG: KarereApplication.__init__ completed")
         
     def do_activate(self):
         """Called when the application is activated."""
@@ -40,8 +43,8 @@ class WhakarereApplication(Adw.Application):
         # Create new window if it doesn't exist
         if not self.main_window:
             print("DEBUG: Creating new window")
-            from .window import WhakarereWindow
-            self.main_window = WhakarereWindow(self)
+            from .window import KarereWindow
+            self.main_window = KarereWindow(self)
             print("DEBUG: Window created")
         
         print("DEBUG: Presenting window")
@@ -51,17 +54,21 @@ class WhakarereApplication(Adw.Application):
     def do_startup(self):
         """Called when the application starts up."""
         print("DEBUG: do_startup called", flush=True)
-        Adw.Application.do_startup(self)
-        print("DEBUG: Initializing Adwaita", flush=True)
-        Adw.init()  # Initialize libadwaita
-        print("DEBUG: Adwaita initialized", flush=True)
+        try:
+            Adw.Application.do_startup(self)
+            print("DEBUG: Parent do_startup completed", flush=True)
+            Adw.init()  # Initialize libadwaita
+            print("DEBUG: Adwaita initialized", flush=True)
+        except Exception as e:
+            print(f"DEBUG: Error in do_startup: {e}", flush=True)
+            raise
         
         # Load GResource
         resource_paths = [
-            '/app/lib/python3.12/site-packages/whakarere-resources.gresource',  # Flatpak installed path
-            '/app/share/whakarere/whakarere-resources.gresource',  # Alternative Flatpak path
-            '/usr/share/whakarere/whakarere-resources.gresource',  # System path
-            os.path.join(os.path.dirname(__file__), '..', '..', 'builddir', 'src', 'whakarere', 'ui', 'whakarere-resources.gresource'),  # Development path
+            '/app/lib/python3.12/site-packages/karere-resources.gresource',  # Flatpak installed path
+            '/app/share/karere/karere-resources.gresource',  # Alternative Flatpak path
+            '/usr/share/karere/karere-resources.gresource',  # System path
+            os.path.join(os.path.dirname(__file__), '..', '..', 'builddir', 'src', 'karere', 'ui', 'karere-resources.gresource'),  # Development path
         ]
         
         resource_loaded = False
@@ -109,7 +116,7 @@ class WhakarereApplication(Adw.Application):
         print("DEBUG: Quit action triggered")
         self.quit_application()
     
-    def send_notification(self, title, message, icon_name="com.mudeprolinux.whakarere"):
+    def send_notification(self, title, message, icon_name="io.github.tobagin.karere"):
         """Send a desktop notification."""
         if not self.notification_enabled:
             return
@@ -138,9 +145,9 @@ class WhakarereApplication(Adw.Application):
         
         # Send notification to inform user app is running in background
         self.send_notification(
-            "Whakarere", 
+            "Karere", 
             "Application is running in the background. Click here to show the window.",
-            "com.mudeprolinux.whakarere"
+            "io.github.tobagin.karere"
         )
         return True  # Prevent default close behavior
     
@@ -155,10 +162,13 @@ class WhakarereApplication(Adw.Application):
 
 def main():
     """Main entry point for the application."""
-    print("DEBUG: Creating WhakarereApplication")
-    app = WhakarereApplication()
+    import sys
+    print("DEBUG: Creating KarereApplication")
+    app = KarereApplication()
+    print("DEBUG: Manually activating application")
+    app.activate()
     print("DEBUG: Running application")
-    result = app.run()
+    result = app.run(sys.argv)
     print(f"DEBUG: Application.run() returned: {result}")
     return result
 

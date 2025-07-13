@@ -1,5 +1,5 @@
 """
-Main window for Whakarere application.
+Main window for Karere application.
 """
 
 import gi
@@ -10,15 +10,15 @@ gi.require_version("Adw", "1")
 gi.require_version("WebKit", "6.0")
 
 from gi.repository import Gtk, Adw, WebKit, Gio, GLib
-from .settings import WhakarereSettingsDialog
+from .settings import KarereSettingsDialog
 from .about import create_about_dialog
 
 
-@Gtk.Template(resource_path='/com/mudeprolinux/whakarere/window.ui')
-class WhakarereWindow(Adw.ApplicationWindow):
+@Gtk.Template(resource_path='/io/github/tobagin/karere/window.ui')
+class KarereWindow(Adw.ApplicationWindow):
     """Main application window containing the WebView."""
     
-    __gtype_name__ = 'WhakarereWindow'
+    __gtype_name__ = 'KarereWindow'
     
     webview_container = Gtk.Template.Child()
     
@@ -29,7 +29,7 @@ class WhakarereWindow(Adw.ApplicationWindow):
         print("DEBUG: Template initialized")
         
         # Initialize settings
-        self.settings = Gio.Settings.new("com.mudeprolinux.whakarere")
+        self.settings = Gio.Settings.new("io.github.tobagin.karere")
         print("DEBUG: GSettings initialized")
         
         # Set up actions and webview
@@ -60,8 +60,8 @@ class WhakarereWindow(Adw.ApplicationWindow):
         print("DEBUG: Setting up WebView")
         
         # Use XDG directories for Flatpak compatibility
-        data_dir = os.environ.get('XDG_DATA_HOME', os.path.expanduser('~/.local/share')) + '/whakarere'
-        cache_dir = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache')) + '/whakarere'
+        data_dir = os.environ.get('XDG_DATA_HOME', os.path.expanduser('~/.local/share')) + '/karere'
+        cache_dir = os.environ.get('XDG_CACHE_HOME', os.path.expanduser('~/.cache')) + '/karere'
         
         # Ensure directories exist
         os.makedirs(data_dir, exist_ok=True)
@@ -152,7 +152,7 @@ class WhakarereWindow(Adw.ApplicationWindow):
     
     def _on_settings_action(self, action, param):
         """Handle settings action."""
-        settings_dialog = WhakarereSettingsDialog(self)
+        settings_dialog = KarereSettingsDialog(self)
         settings_dialog.present(self)
     
     def _on_about_action(self, action, param):
@@ -175,7 +175,7 @@ class WhakarereWindow(Adw.ApplicationWindow):
         """Inject JavaScript to detect new WhatsApp messages."""
         js_script = """
         (function() {
-            console.log('Whakarere: Notification script injected');
+            console.log('Karere: Notification script injected');
             
             let lastMessageCount = 0;
             let isWindowFocused = true;
@@ -185,11 +185,11 @@ class WhakarereWindow(Adw.ApplicationWindow):
             // Check if window is focused
             window.addEventListener('focus', () => { 
                 isWindowFocused = true; 
-                console.log('Whakarere: Window focused');
+                console.log('Karere: Window focused');
             });
             window.addEventListener('blur', () => { 
                 isWindowFocused = false; 
-                console.log('Whakarere: Window blurred');
+                console.log('Karere: Window blurred');
             });
             
             
@@ -197,7 +197,7 @@ class WhakarereWindow(Adw.ApplicationWindow):
             function inspectDOM() {
                 const unreadElements = document.querySelectorAll('[data-icon="unread-count"], [data-testid="unread-count"]');
                 if (unreadElements.length > 0) {
-                    console.log('Whakarere: Found', unreadElements.length, 'unread indicators');
+                    console.log('Karere: Found', unreadElements.length, 'unread indicators');
                 }
             }
             
@@ -289,7 +289,7 @@ class WhakarereWindow(Adw.ApplicationWindow):
                     
                     // Log detection results when there are changes
                     if (totalUnread !== lastMessageCount) {
-                        console.log('Whakarere: Unread count changed:', totalUnread);
+                        console.log('Karere: Unread count changed:', totalUnread);
                     }
                     
                     // Check for new message content
@@ -333,7 +333,7 @@ class WhakarereWindow(Adw.ApplicationWindow):
                                 count: totalUnread || 1
                             });
                             lastNotificationTime = now;
-                            console.log('Whakarere: Notification sent for:', senderName);
+                            console.log('Karere: Notification sent for:', senderName);
                         }
                     }
                     
@@ -341,7 +341,7 @@ class WhakarereWindow(Adw.ApplicationWindow):
                     lastMessageText = latestMessageText;
                     
                 } catch (error) {
-                    console.error('Whakarere: Error checking messages:', error);
+                    console.error('Karere: Error checking messages:', error);
                 }
             }
             
@@ -376,7 +376,7 @@ class WhakarereWindow(Adw.ApplicationWindow):
                         attributes: true,
                         attributeFilter: ['aria-label', 'data-icon', 'data-testid', 'title', 'class']
                     });
-                    console.log('Whakarere: DOM observer started');
+                    console.log('Karere: DOM observer started');
                     
                     // Initial check after observer starts
                     setTimeout(checkForNewMessages, 1000);
@@ -386,7 +386,7 @@ class WhakarereWindow(Adw.ApplicationWindow):
             }
             
             startObserving();
-            console.log('Whakarere: Enhanced message detection initialized');
+            console.log('Karere: Enhanced message detection initialized');
         })();
         """
         

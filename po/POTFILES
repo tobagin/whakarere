@@ -1,4 +1,4 @@
-src/whakarere/application.py
-src/whakarere/window.py
-data/com.mudeprolinux.whakarere.desktop.in
-data/com.mudeprolinux.whakarere.metainfo.xml.in
+src/karere/application.py
+src/karere/window.py
+data/io.github.tobagin.karere.desktop.in
+data/io.github.tobagin.karere.metainfo.xml.in
