@@ -117,7 +117,7 @@ class WhakarereWindow(Adw.ApplicationWindow):
         
         # Set up download handling
         self.setup_download_directory()
-        self.webview.connect("download-requested", self._on_download_requested)
+        self.webview.connect("decide-policy", self._on_decide_policy)
         
         # Load WhatsApp Web
         self.webview.load_uri("https://web.whatsapp.com")
@@ -438,14 +438,28 @@ class WhakarereWindow(Adw.ApplicationWindow):
             # Fallback to home directory
             self.downloads_dir = os.path.expanduser('~')
 
-    def _on_download_requested(self, webview, download):
+    def _on_decide_policy(self, webview, decision, decision_type):
+        """Handle policy decisions including downloads."""
+        from gi.repository import WebKit
+        
+        # Check if this is a download decision
+        if decision_type == WebKit.PolicyDecisionType.RESPONSE:
+            response = decision.get_response()
+            if response and response.get_suggested_filename():
+                # This is a download
+                return self._handle_download(webview, decision, response)
+        
+        # Let WebKit handle other decisions normally
+        return False
+    
+    def _handle_download(self, webview, decision, response):
         """Handle download requests from WhatsApp Web."""
         try:
             print("DEBUG: Download requested")
             
             # Get download info
-            uri = download.get_request().get_uri()
-            suggested_filename = download.get_response().get_suggested_filename()
+            uri = response.get_uri()
+            suggested_filename = response.get_suggested_filename()
             
             print(f"DEBUG: Download URI: {uri}")
             print(f"DEBUG: Suggested filename: {suggested_filename}")
@@ -468,21 +482,26 @@ class WhakarereWindow(Adw.ApplicationWindow):
             
             print(f"DEBUG: Download path: {file_path}")
             
-            # Set the download destination
-            download.set_destination(file_path)
+            # Start the download manually
+            from gi.repository import WebKit
+            download = webview.download_uri(uri)
+            if download:
+                download.set_destination(file_path)
+                
+                # Connect to download completion
+                download.connect("finished", self._on_download_finished)
+                download.connect("failed", self._on_download_failed)
+                
+                # Send notification about download start
+                if hasattr(self.app, 'send_notification'):
+                    self.app.send_notification(
+                        "Download Started",
+                        f"Starting download: {suggested_filename}"
+                    )
             
-            # Connect to download completion
-            download.connect("finished", self._on_download_finished)
-            download.connect("failed", self._on_download_failed)
-            
-            # Send notification about download start
-            if hasattr(self.app, 'send_notification'):
-                self.app.send_notification(
-                    "Download Started",
-                    f"Starting download: {suggested_filename}"
-                )
-            
-            return True  # Allow the download
+            # Prevent the default action
+            decision.ignore()
+            return True
             
         except Exception as e:
             print(f"DEBUG: Error handling download request: {e}")

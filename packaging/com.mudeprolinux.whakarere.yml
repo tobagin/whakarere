@@ -20,8 +20,6 @@ finish-args:
   - --talk-name=org.freedesktop.Notifications
   # File system access for downloads
   - --filesystem=xdg-download
-  # Access to user's home directory for file management
-  - --filesystem=home:ro
 
 cleanup:
   - /include
