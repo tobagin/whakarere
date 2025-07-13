@@ -36,10 +36,13 @@
   
   <screenshots>
     <screenshot type="default">
-      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/screenshot1.png?raw=true</image>
+      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/main-window.png?raw=true</image>
     </screenshot>
     <screenshot>
-      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/screenshot2.png?raw=true</image>
+      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/about-dialog.png?raw=true</image>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/tobagin/whakarere/blob/main/screenshots/settings-dialog.png?raw=true</image>
     </screenshot>
   </screenshots>
   
@@ -49,6 +52,17 @@
   </content_rating>
   
   <releases>
+    <release version="0.1.1" date="2025-01-13">
+      <description>
+        <p>Updated screenshots and improved presentation</p>
+        <ul>
+          <li>Added modern screenshots showcasing GTK4 interface</li>
+          <li>Updated About dialog and Settings dialog screenshots</li>
+          <li>Improved metainfo with better screenshot organization</li>
+          <li>Enhanced visual documentation for users</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.0" date="2023-12-15">
       <description>
         <p>Major rewrite with modern GTK4 architecture and new features</p>

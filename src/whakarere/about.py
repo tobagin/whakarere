@@ -18,7 +18,7 @@ def create_about_dialog(parent_window):
     about_dialog.set_application_name("Whakarere")
     about_dialog.set_application_icon("com.mudeprolinux.whakarere")
     about_dialog.set_developer_name("Thiago Fernandes")
-    about_dialog.set_version("0.1.0")
+    about_dialog.set_version("0.1.1")
     about_dialog.set_website("https://github.com/tobagin/whakarere")
     about_dialog.set_issue_url("https://github.com/tobagin/whakarere/issues")
     about_dialog.set_support_url("https://github.com/tobagin/whakarere/discussions")

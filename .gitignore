@@ -36,3 +36,11 @@ export/
 
 # Logs
 *.log
+
+.flatpak-builder
+.claude
+CLAUDE.md
+flatpak
+flatpak-build
+builddir
+
