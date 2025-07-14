@@ -37,7 +37,7 @@
   </description>
 
   <developer_name>Thiago Fernandes</developer_name>
-  <url type="homepage">http://www.mudeprolinux.com/</url>
+  <url type="homepage">https://github.com/tobagin/karere</url>
   <url type="bugtracker">https://github.com/tobagin/karere/issues</url>
   <url type="help">https://github.com/tobagin/karere/</url>
   
@@ -61,6 +61,16 @@
   </content_rating>
   
   <releases>
+    <release version="0.1.7" date="2025-07-14">
+      <description>
+        <p>Updated metadata URLs to reflect GitHub repository</p>
+        <ul>
+          <li>Updated homepage URL to point to GitHub repository</li>
+          <li>Consolidated all project URLs to github.com/tobagin/karere</li>
+          <li>Improved metadata consistency across all project files</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.6" date="2025-01-13">
       <description>
         <p>Flatpak ID transition metadata and compatibility improvements</p>

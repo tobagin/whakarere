@@ -18,7 +18,7 @@ def create_about_dialog(parent_window):
     about_dialog.set_application_name("Karere")
     about_dialog.set_application_icon("io.github.tobagin.karere")
     about_dialog.set_developer_name("Thiago Fernandes")
-    about_dialog.set_version("0.1.6")
+    about_dialog.set_version("0.1.7")
     about_dialog.set_website("https://github.com/tobagin/karere")
     about_dialog.set_issue_url("https://github.com/tobagin/karere/issues")
     about_dialog.set_support_url("https://github.com/tobagin/karere/discussions")
