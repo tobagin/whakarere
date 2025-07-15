@@ -61,6 +61,18 @@
   </content_rating>
   
   <releases>
+    <release version="0.1.8" date="2025-07-15">
+      <description>
+        <p>Updated application icon with new Maori-inspired design</p>
+        <ul>
+          <li>Replaced application icon with beautiful new Maori-inspired design reflecting the app name "Karere"</li>
+          <li>Generated all required icon sizes (16x16 to 512x512) following Flathub quality guidelines</li>
+          <li>Icon features traditional Maori patterns with excellent contrast and scalability</li>
+          <li>Improved visual identity and brand consistency across all platforms</li>
+          <li>Enhanced desktop integration with culturally appropriate iconography</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.7" date="2025-07-14">
       <description>
         <p>Updated metadata URLs to reflect GitHub repository</p>
