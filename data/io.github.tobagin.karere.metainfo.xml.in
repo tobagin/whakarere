@@ -18,7 +18,7 @@
   
   <description>
     <p>
-      Karere is a modern GTK4 WhatsApp client that provides a native desktop experience
+      Karere is a production-ready GTK4 WhatsApp client that provides a native desktop experience
       for WhatsApp Web. Built with Python, GTK4, and Libadwaita, it offers a clean and
       intuitive interface that integrates seamlessly with your Linux desktop.
     </p>
@@ -32,7 +32,11 @@
       <li>Settings dialog with theme selection and privacy controls</li>
       <li>Full WhatsApp Web functionality with desktop integration</li>
       <li>Hardware-accelerated WebKit rendering</li>
-      <li>Developer tools support for debugging</li>
+      <li>Comprehensive crash reporting with privacy controls</li>
+      <li>Graceful shutdown with window state persistence</li>
+      <li>Production hardening with security enhancements</li>
+      <li>Professional logging system with rotation</li>
+      <li>Signal handling for proper system integration</li>
     </ul>
   </description>
 
@@ -62,6 +66,28 @@
   
   <releases>
     <release version="@VERSION@" date="2025-07-18">
+      <description>
+        <p>Major production release with comprehensive hardening and new features</p>
+        <ul>
+          <li>Comprehensive crash reporting system with privacy controls and local storage</li>
+          <li>Graceful shutdown procedures with window state persistence and resource cleanup</li>
+          <li>Production hardening with automatic environment detection and security enhancements</li>
+          <li>Professional logging system with rotating files and configurable levels</li>
+          <li>Centralized version management with automated validation</li>
+          <li>Signal handling for proper system integration (SIGINT, SIGTERM, SIGHUP)</li>
+          <li>Enhanced error handling and recovery mechanisms throughout the application</li>
+          <li>WebView resource management with proper cleanup on shutdown</li>
+          <li>Crash reporting settings dialog with statistics and management options</li>
+          <li>Temporary files cleanup and comprehensive resource management</li>
+          <li>Force quit capability for emergency shutdown situations</li>
+          <li>Fixed GLib-GIO-CRITICAL error in application startup</li>
+          <li>Complete removal of debug code and development artifacts</li>
+          <li>Comprehensive test suites for all major components</li>
+          <li>Production-ready user experience with state persistence</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.1.9" date="2025-07-18">
       <description>
         <p>Enhanced external link handling and improved browser integration</p>
         <ul>
