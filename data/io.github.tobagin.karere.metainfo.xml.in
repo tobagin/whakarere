@@ -61,6 +61,25 @@
   </content_rating>
   
   <releases>
+    <release version="0.1.9" date="2025-07-18">
+      <description>
+        <p>Enhanced external link handling and improved browser integration</p>
+        <ul>
+          <li>Fixed external link handling to properly open links in system default browser</li>
+          <li>Implemented proper Flatpak portal support for secure external link opening</li>
+          <li>Added comprehensive navigation policy handling for both internal and external links</li>
+          <li>Improved WebView initialization with proper user agent configuration</li>
+          <li>Enhanced platform detection - now correctly shows as Linux instead of macOS</li>
+          <li>Added support for both NAVIGATION_ACTION and NEW_WINDOW_ACTION link types</li>
+          <li>Implemented dual user agent override (HTTP headers + JavaScript) for better compatibility</li>
+          <li>Fixed conversation window loading issues in WhatsApp Web</li>
+          <li>Added comprehensive debugging output for navigation decisions</li>
+          <li>Enhanced security by using portal-based external application launching</li>
+          <li>Improved domain detection logic to properly distinguish internal vs external links</li>
+          <li>Added separate dev/prod app ID support for concurrent development and production usage</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.8" date="2025-07-15">
       <description>
         <p>Updated application icon with new Maori-inspired design</p>

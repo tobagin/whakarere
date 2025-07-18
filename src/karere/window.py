@@ -77,10 +77,6 @@ class KarereWindow(Adw.ApplicationWindow):
         # Create NetworkSession with the data manager
         self.network_session = WebKit.NetworkSession.new(data_directory=data_dir, cache_directory=cache_dir)
         
-        # Create WebView 
-        self.webview = WebKit.WebView.new()
-        print("DEBUG: WebView created")
-        
         # Get the cookie manager from the network session
         self.cookie_manager = self.network_session.get_cookie_manager()
         
@@ -89,6 +85,10 @@ class KarereWindow(Adw.ApplicationWindow):
         self.cookie_manager.set_persistent_storage(cookie_file, WebKit.CookiePersistentStorage.SQLITE)
         print("DEBUG: Cookie persistence configured")
         
+        # Create WebView first
+        self.webview = WebKit.WebView.new()
+        print("DEBUG: WebView created")
+        
         # Configure WebView settings
         webkit_settings = self.webview.get_settings()
         webkit_settings.set_enable_javascript(True)
@@ -96,8 +96,13 @@ class KarereWindow(Adw.ApplicationWindow):
         webkit_settings.set_enable_webgl(True)
         webkit_settings.set_hardware_acceleration_policy(WebKit.HardwareAccelerationPolicy.ALWAYS)
         
-        # Set user agent to avoid mobile version
-        webkit_settings.set_user_agent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        # Set user agent to avoid mobile version and show custom app name
+        from .application import BUS_NAME
+        app_name = "Karere.dev" if BUS_NAME.endswith('.dev') else "Karere"
+        # WhatsApp Web detects the Chrome part, so replace it with our app name
+        user_agent = f"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) {app_name}/120.0.0.0 Safari/537.36"
+        webkit_settings.set_user_agent(user_agent)
+        print(f"DEBUG: User agent set to: {user_agent}")
         print("DEBUG: WebView settings configured")
         
         # Set up script message handler for notifications
@@ -119,9 +124,51 @@ class KarereWindow(Adw.ApplicationWindow):
         self.setup_download_directory()
         self.webview.connect("decide-policy", self._on_decide_policy)
         
+        # Inject user agent override script
+        self._inject_user_agent_override()
+        
         # Load WhatsApp Web
         self.webview.load_uri("https://web.whatsapp.com")
         print("DEBUG: Loading WhatsApp Web")
+    
+    def _inject_user_agent_override(self):
+        """Inject JavaScript to override user agent detection."""
+        from .application import BUS_NAME
+        app_name = "Karere.dev" if BUS_NAME.endswith('.dev') else "Karere"
+        
+        user_agent_script = f"""
+        (function() {{
+            console.log('Karere: Overriding user agent detection');
+            
+            // Override navigator.userAgent property
+            Object.defineProperty(navigator, 'userAgent', {{
+                get: function() {{
+                    return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) {app_name}/120.0.0.0 Safari/537.36';
+                }},
+                configurable: true
+            }});
+            
+            // Override navigator.appVersion
+            Object.defineProperty(navigator, 'appVersion', {{
+                get: function() {{
+                    return '5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) {app_name}/120.0.0.0 Safari/537.36';
+                }},
+                configurable: true
+            }});
+            
+            console.log('Karere: User agent overridden to:', navigator.userAgent);
+        }})();
+        """
+        
+        user_content_manager = self.webview.get_user_content_manager()
+        script = WebKit.UserScript.new(
+            user_agent_script,
+            WebKit.UserContentInjectedFrames.TOP_FRAME,
+            WebKit.UserScriptInjectionTime.START,
+            None, None
+        )
+        user_content_manager.add_script(script)
+        print(f"DEBUG: User agent override script injected for {app_name}")
     
     def _apply_settings(self):
         """Apply current settings to the application."""
@@ -439,11 +486,79 @@ class KarereWindow(Adw.ApplicationWindow):
             self.downloads_dir = os.path.expanduser('~')
 
     def _on_decide_policy(self, webview, decision, decision_type):
-        """Handle policy decisions including downloads."""
+        """Handle policy decisions including downloads and navigation."""
         from gi.repository import WebKit
         
+        print(f"DEBUG: Policy decision type: {decision_type}")
+        
+        # Print the actual enum values for debugging
+        print(f"DEBUG: NAVIGATION_ACTION = {WebKit.PolicyDecisionType.NAVIGATION_ACTION}")
+        print(f"DEBUG: NEW_WINDOW_ACTION = {WebKit.PolicyDecisionType.NEW_WINDOW_ACTION}")
+        print(f"DEBUG: RESPONSE = {WebKit.PolicyDecisionType.RESPONSE}")
+        
+        # Check if this is a navigation decision (link click)
+        if decision_type == WebKit.PolicyDecisionType.NAVIGATION_ACTION:
+            print("DEBUG: Processing NAVIGATION_ACTION")
+        elif decision_type == WebKit.PolicyDecisionType.NEW_WINDOW_ACTION:
+            print("DEBUG: Processing NEW_WINDOW_ACTION - this might be external links!")
+            try:
+                navigation_action = decision.get_navigation_action()
+                if navigation_action:
+                    request = navigation_action.get_request()
+                    if request:
+                        uri = request.get_uri()
+                        print(f"DEBUG: NEW_WINDOW_ACTION URI: {uri}")
+                        
+                        if self._should_open_externally(uri):
+                            print(f"DEBUG: Opening externally from NEW_WINDOW_ACTION: {uri}")
+                            self._open_external_link(uri)
+                            decision.ignore()
+                            return True
+                        else:
+                            print(f"DEBUG: Allowing NEW_WINDOW_ACTION internally: {uri}")
+                            decision.use()
+                            return True
+            except Exception as e:
+                print(f"DEBUG: Error handling NEW_WINDOW_ACTION: {e}")
+                return False
+        
+        # Original navigation action handling
+        if decision_type == WebKit.PolicyDecisionType.NAVIGATION_ACTION:
+            print("DEBUG: Processing NAVIGATION_ACTION")
+            try:
+                navigation_action = decision.get_navigation_action()
+                if navigation_action:
+                    request = navigation_action.get_request()
+                    if request:
+                        uri = request.get_uri()
+                        navigation_type = navigation_action.get_navigation_type()
+                        
+                        print(f"DEBUG: Navigation type: {navigation_type}, URI: {uri}")
+                        
+                        # Handle external links (clicked links that leave WhatsApp Web)
+                        if navigation_type == WebKit.NavigationType.LINK_CLICKED:
+                            print(f"DEBUG: Link clicked: {uri}")
+                            if self._should_open_externally(uri):
+                                print(f"DEBUG: Opening externally: {uri}")
+                                self._open_external_link(uri)
+                                decision.ignore()
+                                return True
+                            else:
+                                print(f"DEBUG: Allowing internal navigation: {uri}")
+                                decision.use()
+                                return True
+                        else:
+                            print(f"DEBUG: Other navigation type: {navigation_type}")
+                    else:
+                        print("DEBUG: No request found in navigation action")
+                else:
+                    print("DEBUG: No navigation action found")
+            except Exception as e:
+                print(f"DEBUG: Error handling navigation action: {e}")
+                return False
+        
         # Check if this is a download decision
-        if decision_type == WebKit.PolicyDecisionType.RESPONSE:
+        elif decision_type == WebKit.PolicyDecisionType.RESPONSE:
             response = decision.get_response()
             if response and response.get_suggested_filename():
                 # This is a download
@@ -451,6 +566,92 @@ class KarereWindow(Adw.ApplicationWindow):
         
         # Let WebKit handle other decisions normally
         return False
+    
+    def _should_open_externally(self, uri):
+        """Determine if a URI should be opened in the external browser."""
+        if not uri:
+            return False
+        
+        print(f"DEBUG: Checking URI for external opening: {uri}")
+        
+        # Parse the URI to check domain
+        try:
+            from urllib.parse import urlparse
+            parsed = urlparse(uri)
+            domain = parsed.netloc.lower()
+            scheme = parsed.scheme.lower()
+            
+            print(f"DEBUG: Parsed URI - scheme: {scheme}, domain: {domain}")
+            
+            # Always handle internal schemes internally
+            if scheme in ['data', 'blob', 'javascript', 'about']:
+                print(f"DEBUG: Internal scheme {scheme} - keeping internal")
+                return False
+            
+            # WhatsApp domains that should stay internal
+            whatsapp_domains = [
+                'web.whatsapp.com',
+                'whatsapp.com',
+                'www.whatsapp.com',
+                'static.whatsapp.net',
+                'pps.whatsapp.net'
+            ]
+            
+            # If it's a WhatsApp domain, allow internal navigation
+            if any(domain == wd or domain.endswith('.' + wd) for wd in whatsapp_domains):
+                print(f"DEBUG: WhatsApp domain {domain} - keeping internal")
+                return False
+            
+            # If there's no domain (relative URLs), keep internal
+            if not domain:
+                print(f"DEBUG: No domain (relative URL) - keeping internal")
+                return False
+            
+            # Only open external domains in browser
+            print(f"DEBUG: External domain {domain} - opening externally")
+            return True
+            
+        except Exception as e:
+            print(f"DEBUG: Error parsing URI {uri}: {e}")
+            return False
+    
+    def _open_external_link(self, uri):
+        """Open a URI in the system's default browser using Flatpak portal."""
+        try:
+            print(f"DEBUG: Opening external link via portal: {uri}")
+            
+            # Use Gio.AppInfo.launch_default_for_uri_async for proper portal support
+            from gi.repository import Gio
+            
+            # This will automatically use the portal in Flatpak environments
+            Gio.AppInfo.launch_default_for_uri_async(
+                uri, 
+                None,  # launch_context
+                None,  # cancellable
+                self._on_external_link_opened,  # callback
+                uri    # user_data
+            )
+            
+            print(f"DEBUG: External link launch initiated: {uri}")
+            
+        except Exception as e:
+            print(f"DEBUG: Error opening external link {uri}: {e}")
+            # Fallback: try the synchronous version
+            try:
+                from gi.repository import Gio
+                Gio.AppInfo.launch_default_for_uri(uri, None)
+                print(f"DEBUG: Opened external link with fallback method: {uri}")
+            except Exception as e2:
+                print(f"DEBUG: Failed to open external link with fallback: {e2}")
+    
+    def _on_external_link_opened(self, source, result, user_data):
+        """Callback for external link opening."""
+        try:
+            from gi.repository import Gio
+            Gio.AppInfo.launch_default_for_uri_finish(result)
+            print(f"DEBUG: Successfully opened external link: {user_data}")
+        except Exception as e:
+            print(f"DEBUG: Failed to open external link {user_data}: {e}")
     
     def _handle_download(self, webview, decision, response):
         """Handle download requests from WhatsApp Web."""

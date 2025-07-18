@@ -1,4 +1,4 @@
-app-id: io.github.tobagin.karere
+app-id: io.github.tobagin.karere.dev
 runtime: org.gnome.Platform
 runtime-version: '48'
 sdk: org.gnome.Sdk

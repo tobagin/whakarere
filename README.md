@@ -48,9 +48,15 @@ Karere is a native GTK4 application that provides a seamless WhatsApp Web experi
 - Menu-based quit functionality (app runs in background by default)
 - Keyboard shortcuts for common actions
 
+### 🌐 **Enhanced Web Integration**
+- **Smart link handling**: External links open in your default browser
+- **Secure portal integration**: Uses Flatpak portals for external application launching
+- **Proper platform detection**: Correctly identifies as Linux (no more macOS prompts)
+- **Improved navigation**: Seamless switching between WhatsApp conversations
+
 ### 📦 **Flatpak Ready**
 - Distributed as a secure Flatpak application
-- Sandboxed environment for enhanced security
+- Sandboxed environment with portal-based security
 - Easy installation and updates through Flatpak
 
 ## Screenshots

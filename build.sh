@@ -43,7 +43,7 @@ done
 
 # Determine which manifest to use
 if [ "$DEV_MODE" = true ]; then
-    MANIFEST="$PACKAGING_DIR/io.github.tobagin.karere-dev.yml"
+    MANIFEST="$PACKAGING_DIR/io.github.tobagin.karere.dev.yml"
     echo "🔧 Building Karere in DEVELOPMENT mode (local sources)"
 else
     MANIFEST="$PACKAGING_DIR/io.github.tobagin.karere.yml"
@@ -75,7 +75,11 @@ flatpak-builder \
 echo ""
 if [ "$INSTALL_FLAG" = "--install" ]; then
     echo "✅ Karere built and installed successfully!"
-    echo "🎯 Run with: flatpak run io.github.tobagin.karere"
+    if [ "$DEV_MODE" = true ]; then
+        echo "🎯 Run with: flatpak run io.github.tobagin.karere.dev"
+    else
+        echo "🎯 Run with: flatpak run io.github.tobagin.karere"
+    fi
 else
     echo "✅ Karere built successfully!"
     echo "💡 Add --install flag to install the application"

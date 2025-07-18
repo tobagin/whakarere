@@ -13,7 +13,22 @@ gi.require_version("WebKit", "6.0")
 
 from gi.repository import Gtk, Adw, Gio, GLib
 
-BUS_NAME = "io.github.tobagin.karere"
+# Determine app ID based on environment (for dev/prod distinction)
+def get_app_id():
+    """Get the appropriate app ID based on environment."""
+    # Check if we're running in Flatpak
+    flatpak_id = os.environ.get('FLATPAK_ID')
+    if flatpak_id:
+        return flatpak_id
+    
+    # Check for dev mode indicator
+    if os.environ.get('KARERE_DEV_MODE') == '1':
+        return "io.github.tobagin.karere.dev"
+    
+    # Default to production
+    return "io.github.tobagin.karere"
+
+BUS_NAME = get_app_id()
 
 
 class KarereApplication(Adw.Application):
@@ -116,7 +131,7 @@ class KarereApplication(Adw.Application):
         print("DEBUG: Quit action triggered")
         self.quit_application()
     
-    def send_notification(self, title, message, icon_name="io.github.tobagin.karere"):
+    def send_notification(self, title, message, icon_name=None):
         """Send a desktop notification."""
         if not self.notification_enabled:
             return
@@ -125,6 +140,10 @@ class KarereApplication(Adw.Application):
             notification = Gio.Notification()
             notification.set_title(title)
             notification.set_body(message)
+            
+            # Use dynamic app ID for icon if not specified
+            if icon_name is None:
+                icon_name = BUS_NAME
             
             # Add action to show window when notification is clicked
             notification.add_button("Show", "app.show-window")
@@ -146,8 +165,7 @@ class KarereApplication(Adw.Application):
         # Send notification to inform user app is running in background
         self.send_notification(
             "Karere", 
-            "Application is running in the background. Click here to show the window.",
-            "io.github.tobagin.karere"
+            "Application is running in the background. Click here to show the window."
         )
         return True  # Prevent default close behavior
     
