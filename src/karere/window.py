@@ -297,8 +297,9 @@ class KarereWindow(Adw.ApplicationWindow):
         """Handle WebView load events with error handling."""
         try:
             if load_event == WebKit.LoadEvent.FINISHED:
-                self.logger.info("Page load finished, injecting notification script")
+                self.logger.info("Page load finished, injecting notification script and CSS fixes")
                 self._inject_notification_script()
+                self._inject_css_fixes()
             elif load_event == WebKit.LoadEvent.STARTED:
                 self.logger.info("Page load started")
             elif load_event == WebKit.LoadEvent.COMMITTED:
@@ -610,6 +611,150 @@ class KarereWindow(Adw.ApplicationWindow):
         
         self.logger.info("Injecting notification detection script")
         self.webview.evaluate_javascript(js_script, -1, None, None, None, self._on_javascript_result, None)
+    
+    def _inject_css_fixes(self):
+        """Inject CSS fixes for emoji rendering and other WebKit-specific issues."""
+        css_fixes = """
+        (function() {
+            console.log('Karere: Injecting CSS fixes for emoji rendering');
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                /* Fix emoji height and rendering issues */
+                [data-emoji-picker] img.emoji,
+                .emoji-picker img,
+                .emoji-mart-emoji img,
+                ._2cNQ._3MZy img,
+                ._2cNQ img,
+                .emoji img,
+                span[data-emoji] img,
+                span[data-emoji],
+                .emoji-picker-emoji img,
+                .emoji-panel img.emoji,
+                .emoji-category-content img.emoji {
+                    height: 24px !important;
+                    width: 24px !important;
+                    min-height: 24px !important;
+                    min-width: 24px !important;
+                    line-height: 24px !important;
+                    display: inline-block !important;
+                    vertical-align: middle !important;
+                    object-fit: contain !important;
+                }
+                
+                /* Fix emoji container heights */
+                [data-emoji-picker] ._2cNQ._3MZy,
+                [data-emoji-picker] ._2cNQ,
+                .emoji-picker-emoji,
+                .emoji-panel .emoji-category-content > div,
+                .emoji-panel .emoji-category-content span {
+                    height: 32px !important;
+                    min-height: 32px !important;
+                    line-height: 32px !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    padding: 4px !important;
+                }
+                
+                /* Fix emoji picker grid layout */
+                .emoji-picker-category .emoji-picker-emoji,
+                .emoji-category-content {
+                    display: grid !important;
+                    grid-template-columns: repeat(auto-fill, 32px) !important;
+                    gap: 4px !important;
+                }
+                
+                /* Fix emoji panel scrolling */
+                .emoji-panel,
+                .emoji-picker-scroll {
+                    overflow-y: auto !important;
+                    max-height: 400px !important;
+                }
+                
+                /* Ensure emoji characters render properly */
+                span[data-emoji]:not(:empty),
+                .emoji-char {
+                    font-size: 20px !important;
+                    line-height: 24px !important;
+                    height: 24px !important;
+                    width: 24px !important;
+                    display: inline-block !important;
+                    text-align: center !important;
+                    vertical-align: middle !important;
+                }
+                
+                /* Fix search and category headers */
+                .emoji-picker-search,
+                .emoji-picker-category-label {
+                    height: auto !important;
+                    min-height: 32px !important;
+                    line-height: 32px !important;
+                }
+                
+                /* WebKit-specific emoji font rendering */
+                @supports (-webkit-appearance: none) {
+                    .emoji, [data-emoji], span[data-emoji] {
+                        font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", "Noto Emoji", "EmojiOne Color", "Android Emoji", sans-serif !important;
+                        font-variant-emoji: emoji !important;
+                        text-rendering: optimizeLegibility !important;
+                        -webkit-font-smoothing: antialiased !important;
+                        -moz-osx-font-smoothing: grayscale !important;
+                    }
+                }
+                
+                /* Fix specific WhatsApp Web emoji selectors */
+                ._2cNQ {
+                    min-height: 32px !important;
+                    height: 32px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                }
+                
+                ._2cNQ._3MZy {
+                    padding: 4px !important;
+                }
+                
+                /* Fix emoji hover and selection states */
+                [data-emoji-picker] ._2cNQ:hover,
+                .emoji-picker-emoji:hover {
+                    background-color: rgba(0, 0, 0, 0.1) !important;
+                    border-radius: 4px !important;
+                }
+                
+                /* Force reflow to apply changes */
+                [data-emoji-picker] {
+                    transform: translateZ(0) !important;
+                }
+            `;
+            
+            document.head.appendChild(style);
+            console.log('Karere: CSS fixes applied for emoji rendering');
+            
+            // Force reflow of emoji elements
+            setTimeout(() => {
+                const emojiElements = document.querySelectorAll('[data-emoji-picker], .emoji-picker, .emoji-panel, ._2cNQ, [data-emoji]');
+                emojiElements.forEach(el => {
+                    el.style.transform = 'translateZ(0)';
+                    el.offsetHeight; // Force reflow
+                    el.style.transform = '';
+                });
+                console.log('Karere: Forced reflow of emoji elements');
+            }, 1000);
+            
+        })();
+        """
+        
+        self.webview.evaluate_javascript(css_fixes, -1, None, None, None, self._on_css_fixes_result, None)
+    
+    def _on_css_fixes_result(self, webview, task, user_data):
+        """Handle CSS fixes injection result."""
+        try:
+            webview.evaluate_javascript_finish(task)
+            self.logger.debug("CSS fixes injection completed successfully")
+        except Exception as e:
+            self.logger.error(f"CSS fixes injection failed: {e}")
     
     def _on_javascript_result(self, webview, task, user_data):
         """Handle JavaScript execution result."""
