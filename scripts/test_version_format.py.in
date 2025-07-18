@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""
+Version format validation test for Karere build process.
+
+This script validates that the version format follows semantic versioning (X.Y.Z).
+"""
+
+import re
+import sys
+
+def main():
+    """Test version format validity."""
+    version = "@VERSION@"
+    
+    print(f"Testing version format: {version}")
+    
+    # Test semantic versioning format
+    if not re.match(r'^\d+\.\d+\.\d+$', version):
+        print(f"❌ FAIL: Invalid version format '{version}'")
+        print("Expected format: X.Y.Z (e.g., 0.1.9)")
+        sys.exit(1)
+    
+    # Test reasonable version ranges
+    parts = version.split('.')
+    major, minor, patch = int(parts[0]), int(parts[1]), int(parts[2])
+    
+    if major > 99 or minor > 99 or patch > 99:
+        print(f"❌ FAIL: Version component too large: {version}")
+        print("Expected: major/minor/patch <= 99")
+        sys.exit(1)
+    
+    print(f"✅ PASS: Version format valid: {version}")
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())

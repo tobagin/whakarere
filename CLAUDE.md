@@ -36,7 +36,7 @@ meson compile -C builddir
 
 ## Project Structure and Architecture
 
-**Karere** (version 0.1.6) is a modern GTK4/Libadwaita WhatsApp client restructured as a proper Python library with Meson build system.
+**Karere** is a modern GTK4/Libadwaita WhatsApp client restructured as a proper Python library with Meson build system.
 
 ### Core Architecture
 - **Frontend**: Python3 + GTK4 + Libadwaita + WebKit WebView 6.0

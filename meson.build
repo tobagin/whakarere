@@ -1,5 +1,5 @@
 project('karere',
-  version: '0.1.9',
+  version: '0.3.0',
   license: 'GPL-3.0-or-later',
   meson_version: '>= 1.4.0',
   default_options: [
@@ -52,6 +52,43 @@ configure_file(
   install: true,
   install_dir: get_option('bindir'),
   install_mode: 'rwxr-xr-x'
+)
+
+# Version validation tests
+version_consistency_script = files('scripts/test_version_consistency.py')
+test('version-consistency', py_installation,
+  args: [version_consistency_script],
+  suite: 'validation',
+  timeout: 30
+)
+
+# Build-time version validation
+build_validation_script = files('scripts/validate_build_version.py')
+test('build-version-validation', py_installation,
+  args: [build_validation_script],
+  suite: 'validation',
+  timeout: 30
+)
+
+# Version format validation
+version_format_script = configure_file(
+  input: files('scripts/test_version_format.py.in'),
+  output: 'test_version_format.py',
+  configuration: conf
+)
+
+test('version-format', py_installation,
+  args: [version_format_script],
+  suite: 'validation',
+  timeout: 10
+)
+
+# Production hardening validation
+production_hardening_script = files('scripts/test_production_hardening.py')
+test('production-hardening', py_installation,
+  args: [production_hardening_script],
+  suite: 'validation',
+  timeout: 30
 )
 
 gnome.post_install(

@@ -5,15 +5,10 @@
 PYTHON="@PYTHON@"
 INSTALLED_PYTHONPATH="@INSTALLED_PYTHONPATH@"
 
-echo "DEBUG: karere script starting"
-echo "DEBUG: PYTHON=$PYTHON"
-echo "DEBUG: INSTALLED_PYTHONPATH=$INSTALLED_PYTHONPATH"
 
 # Set up Python path for installed version
 export PYTHONPATH="$INSTALLED_PYTHONPATH:$PYTHONPATH"
 
-echo "DEBUG: PYTHONPATH=$PYTHONPATH"
 
 # Run the application
-echo "DEBUG: Running: $PYTHON -m karere.main"
 exec "$PYTHON" -m karere.main "$@"

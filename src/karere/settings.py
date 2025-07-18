@@ -8,6 +8,8 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
 
 from gi.repository import Gtk, Adw, Gio
+from ._build_config import should_show_developer_settings, should_enable_developer_tools
+from .crash_settings import CrashReportingSettingsDialog
 
 
 @Gtk.Template(resource_path='/io/github/tobagin/karere/settings.ui')
@@ -27,6 +29,8 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
         
         self._setup_signals()
         self._load_settings()
+        self._configure_production_hardening()
+        self._add_crash_reporting_settings()
     
     def _setup_signals(self):
         """Set up signal connections."""
@@ -79,3 +83,61 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
             style_manager.set_color_scheme(Adw.ColorScheme.FORCE_DARK)
         else:  # follow-system
             style_manager.set_color_scheme(Adw.ColorScheme.DEFAULT)
+    
+    def _configure_production_hardening(self):
+        """Configure production hardening features."""
+        # Hide developer tools in production builds
+        if not should_show_developer_settings():
+            self.developer_tools_row.set_visible(False)
+            
+        # Disable developer tools functionality in production
+        if not should_enable_developer_tools():
+            # Force disable developer tools setting
+            self.settings.set_boolean("developer-tools", False)
+            # Make the row insensitive if it's still visible
+            self.developer_tools_row.set_sensitive(False)
+    
+    def _add_crash_reporting_settings(self):
+        """Add crash reporting settings to the dialog."""
+        try:
+            # Get the first (and likely only) page
+            page = self.get_page_by_name("general")
+            if not page:
+                # If no page found, create one
+                page = Adw.PreferencesPage()
+                page.set_title("General")
+                page.set_name("general")
+                self.add(page)
+            
+            # Create crash reporting group
+            crash_group = Adw.PreferencesGroup()
+            crash_group.set_title("Crash Reporting")
+            crash_group.set_description("Configure crash reporting and debugging")
+            
+            # Create crash reporting settings row
+            crash_settings_row = Adw.ActionRow()
+            crash_settings_row.set_title("Crash Reporting Settings")
+            crash_settings_row.set_subtitle("Configure crash report collection and management")
+            
+            # Create settings button
+            crash_settings_button = Gtk.Button()
+            crash_settings_button.set_label("Configure")
+            crash_settings_button.set_valign(Gtk.Align.CENTER)
+            crash_settings_button.connect("clicked", self._on_crash_settings_clicked)
+            
+            crash_settings_row.add_suffix(crash_settings_button)
+            crash_group.add(crash_settings_row)
+            
+            # Add group to page
+            page.add(crash_group)
+            
+        except Exception as e:
+            print(f"Warning: Failed to add crash reporting settings: {e}")
+    
+    def _on_crash_settings_clicked(self, button):
+        """Handle crash settings button click."""
+        try:
+            crash_settings_dialog = CrashReportingSettingsDialog(self.parent_window)
+            crash_settings_dialog.present()
+        except Exception as e:
+            print(f"Error opening crash settings dialog: {e}")

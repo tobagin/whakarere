@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "karere"
+dynamic = ["version"]
+description = "A modern GTK4 WhatsApp client for Linux"
+readme = "README.md"
+license = {text = "GPL-3.0-or-later"}
+authors = [
+    {name = "Thiago Fernandes", email = "contact@mudeprolinux.com"},
+]
+keywords = ["whatsapp", "gtk4", "libadwaita", "webkit", "messaging", "chat"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Environment :: X11 Applications :: GTK",
+    "Topic :: Communications :: Chat",
+    "Topic :: Internet :: WWW/HTTP :: Browsers",
+]
+requires-python = ">=3.8"
+dependencies = [
+    "PyGObject>=3.42.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "importlib-metadata>=4.0.0; python_version<'3.8'",
+]
+
+[project.urls]
+Homepage = "https://github.com/tobagin/karere"
+Repository = "https://github.com/tobagin/karere"
+"Bug Reports" = "https://github.com/tobagin/karere/issues"
+Discussions = "https://github.com/tobagin/karere/discussions"
+
+[project.scripts]
+karere = "karere.main:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "karere.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"

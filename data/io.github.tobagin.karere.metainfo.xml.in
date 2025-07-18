@@ -61,7 +61,7 @@
   </content_rating>
   
   <releases>
-    <release version="0.1.9" date="2025-07-18">
+    <release version="@VERSION@" date="2025-07-18">
       <description>
         <p>Enhanced external link handling and improved browser integration</p>
         <ul>

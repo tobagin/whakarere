@@ -36,5 +36,37 @@
       <summary>Enable developer tools</summary>
       <description>Whether to enable WebKit developer tools and context menu</description>
     </key>
+    <key name="log-level" type="s">
+      <choices>
+        <choice value="DEBUG"/>
+        <choice value="INFO"/>
+        <choice value="WARNING"/>
+        <choice value="ERROR"/>
+        <choice value="CRITICAL"/>
+      </choices>
+      <default>"INFO"</default>
+      <summary>Logging level</summary>
+      <description>The minimum level of messages to log</description>
+    </key>
+    <key name="enable-file-logging" type="b">
+      <default>true</default>
+      <summary>Enable file logging</summary>
+      <description>Whether to save log messages to a file</description>
+    </key>
+    <key name="enable-console-logging" type="b">
+      <default>true</default>
+      <summary>Enable console logging</summary>
+      <description>Whether to display log messages in the console</description>
+    </key>
+    <key name="enable-crash-reporting" type="b">
+      <default>true</default>
+      <summary>Enable crash reporting</summary>
+      <description>Whether to enable crash reporting and collection</description>
+    </key>
+    <key name="collect-system-info" type="b">
+      <default>true</default>
+      <summary>Collect system information</summary>
+      <description>Whether to collect system information in crash reports</description>
+    </key>
   </schema>
 </schemalist>
