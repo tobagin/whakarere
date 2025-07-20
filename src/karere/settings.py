@@ -3,6 +3,7 @@ Settings dialog for Karere application.
 """
 
 import gi
+import logging
 
 gi.require_version("Gtk", "4.0")
 gi.require_version("Adw", "1")
@@ -22,6 +23,7 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
     theme_row = Gtk.Template.Child()
     persistent_cookies_row = Gtk.Template.Child()
     developer_tools_row = Gtk.Template.Child()
+    privacy_group = Gtk.Template.Child()
     
     # Notifications page template children
     message_notifications_row = Gtk.Template.Child()
@@ -41,6 +43,7 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
         super().__init__()
         self.parent_window = parent_window
         self.settings = Gio.Settings.new("io.github.tobagin.karere")
+        self.logger = logging.getLogger("karere.settings")
         
         self._setup_signals()
         self._load_settings()
@@ -152,20 +155,17 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
     def _add_crash_reporting_settings(self):
         """Add crash reporting settings to the dialog."""
         try:
-            # Get the first (and likely only) page
-            page = self.get_page_by_name("general")
-            if not page:
-                # If no page found, create one
-                page = Adw.PreferencesPage()
-                page.set_title("General")
-                page.set_name("general")
-                self.add(page)
-            
-            # Create crash reporting group
-            crash_group = Adw.PreferencesGroup()
-            crash_group.set_title("Crash Reporting")
-            crash_group.set_description("Configure crash reporting and debugging")
-            
+            # Add crash reporting settings to the privacy group
+            if hasattr(self, 'privacy_group') and self.privacy_group:
+                self._add_crash_reporting_to_privacy_group()
+            else:
+                self.logger.warning("Privacy group not found, skipping crash reporting settings")
+        except Exception as e:
+            self.logger.warning(f"Failed to add crash reporting settings: {e}")
+    
+    def _add_crash_reporting_to_privacy_group(self):
+        """Add crash reporting settings to the privacy group."""
+        try:
             # Create crash reporting settings row
             crash_settings_row = Adw.ActionRow()
             crash_settings_row.set_title("Crash Reporting Settings")
@@ -178,13 +178,12 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
             crash_settings_button.connect("clicked", self._on_crash_settings_clicked)
             
             crash_settings_row.add_suffix(crash_settings_button)
-            crash_group.add(crash_settings_row)
             
-            # Add group to page
-            page.add(crash_group)
+            # Add the row to the privacy group
+            self.privacy_group.add(crash_settings_row)
             
         except Exception as e:
-            print(f"Warning: Failed to add crash reporting settings: {e}")
+            self.logger.warning(f"Failed to add crash reporting settings to privacy group: {e}")
     
     def _on_crash_settings_clicked(self, button):
         """Handle crash settings button click."""
