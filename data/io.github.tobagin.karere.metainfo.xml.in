@@ -67,6 +67,21 @@
   <releases>
     <release version="@VERSION@" date="2025-07-20">
       <description>
+        <p>Fix false message notifications and session tracking issues</p>
+        <ul>
+          <li>Fixed false message count detection that was showing incorrect unread counts (e.g., "90 new messages" when no unread)</li>
+          <li>Fixed JavaScript detection accumulation bug - now uses highest valid count instead of summing all methods</li>
+          <li>Added filtering for unrealistic message counts to prevent false positives</li>
+          <li>Enhanced 'first-session-only' mode debugging with comprehensive session tracking logs</li>
+          <li>Improved notification detection reliability with detailed method-by-method logging</li>
+          <li>Better session state management visibility for troubleshooting notification frequency modes</li>
+          <li>Added comprehensive debug logging for notification detection and session tracking</li>
+          <li>Fixed message detection accuracy by preventing double-counting from multiple detection methods</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.4.1" date="2025-07-20">
+      <description>
         <p>Critical background notification fixes and UI improvements</p>
         <ul>
           <li>Fixed background notification frequency logic - 'always' mode now works correctly</li>
