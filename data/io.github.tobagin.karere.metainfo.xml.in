@@ -65,7 +65,21 @@
   </content_rating>
   
   <releases>
-    <release version="@VERSION@" date="2025-07-18">
+    <release version="@VERSION@" date="2025-01-20">
+      <description>
+        <p>Advanced notification system and window management enhancements</p>
+        <ul>
+          <li>Window position saving and restoration (X11/Wayland compatible)</li>
+          <li>Improved window state management with size, position, and maximized state</li>
+          <li>Advanced notification system foundation with 12 new configuration options</li>
+          <li>Core notification settings for messages, background, system events, and Do Not Disturb</li>
+          <li>Comprehensive notification management schema (Phase 1 of 8-phase enhancement plan)</li>
+          <li>GSettings schema expanded with notification control options</li>
+          <li>Foundation for professional-grade notification management system</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.3.0" date="2025-07-18">
       <description>
         <p>Major production release with comprehensive hardening and new features</p>
         <ul>
@@ -84,8 +98,6 @@
           <li>Complete removal of debug code and development artifacts</li>
           <li>Comprehensive test suites for all major components</li>
           <li>Production-ready user experience with state persistence</li>
-          <li>Window position saving and restoration (X11/Wayland compatible)</li>
-          <li>Improved window state management with size, position, and maximized state</li>
         </ul>
       </description>
     </release>

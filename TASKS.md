@@ -1400,3 +1400,53 @@ Results: 8 passed, 0 failed
 - Advanced error reporting for shutdown issues
 
 **Related TODO**: Part of TODO.md section 1.3 Production Hardening
+
+## 2025-01-20
+
+### Phase 1.1: Core Notification Settings Schema Implementation ✅
+**Status**: Completed  
+**Priority**: High  
+**Completion Date**: 2025-01-20  
+
+**Description**: Implemented the foundational GSettings schema for the comprehensive notification management system, adding 12 new configuration keys covering all core notification types and behaviors.
+
+**Details**:
+- **Background Notifications**: Added master toggle and frequency control (always/first-session-only/never)
+- **Message Notifications**: Added toggle, focus-based control, preview settings, and content length limits
+- **Do Not Disturb Mode**: Implemented manual toggle, scheduled DND with time controls, and background notification exceptions
+- **System Notifications**: Added toggle for downloads, errors, and system events
+- **Schema Validation**: All new keys validated through successful `glib-compile-schemas` compilation
+- **Backward Compatibility**: All new settings have sensible defaults that preserve existing behavior
+
+**Schema Keys Added**:
+1. `show-background-notifications` (boolean) - Master toggle for background notifications
+2. `background-notification-frequency` (string) - When to show background notifications
+3. `show-message-notifications` (boolean) - Toggle WhatsApp message notifications  
+4. `message-notification-when-focused` (boolean) - Show notifications when window focused
+5. `message-preview-enabled` (boolean) - Show message content in notifications
+6. `message-preview-length` (integer) - Character limit for previews (default: 50)
+7. `dnd-mode-enabled` (boolean) - Master Do Not Disturb toggle
+8. `dnd-allow-background-notifications` (boolean) - Background notifications during DND
+9. `dnd-schedule-enabled` (boolean) - Enable automatic DND scheduling
+10. `dnd-start-time` (string) - DND start time (default: "22:00")
+11. `dnd-end-time` (string) - DND end time (default: "08:00") 
+12. `show-system-notifications` (boolean) - Toggle system notifications
+
+**Files Modified**:
+- `data/io.github.tobagin.karere.gschema.xml`
+
+**Technical Excellence**:
+- Comprehensive choice validation for enum-type settings
+- Clear, descriptive summaries and descriptions for all keys
+- Logical grouping with comments for maintainability
+- Future-proof design aligned with 8-phase enhancement plan
+- Production-ready defaults that maintain existing user experience
+
+**Next Steps**: 
+- Phase 1.2: UI Implementation for notification settings page
+- Phase 1.3: NotificationManager class implementation
+- Phase 1.4: Integration with existing notification system
+
+**Related Documentation**: 
+- Full roadmap detailed in `NOTIFICATION-ENHANCEMENT-PLAN.md`
+- Part of comprehensive notification system enhancement project

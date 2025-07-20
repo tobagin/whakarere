@@ -78,5 +78,78 @@
       <summary>Collect system information</summary>
       <description>Whether to collect system information in crash reports</description>
     </key>
+
+    <!-- Background Notifications -->
+    <key name="show-background-notifications" type="b">
+      <default>true</default>
+      <summary>Show background notifications</summary>
+      <description>Whether to show notifications when window goes to background</description>
+    </key>
+    <key name="background-notification-frequency" type="s">
+      <choices>
+        <choice value="always"/>
+        <choice value="first-session-only"/>
+        <choice value="never"/>
+      </choices>
+      <default>"always"</default>
+      <summary>Background notification frequency</summary>
+      <description>When to show background notifications</description>
+    </key>
+
+    <!-- Message Notifications -->
+    <key name="show-message-notifications" type="b">
+      <default>true</default>
+      <summary>Show message notifications</summary>
+      <description>Whether to show WhatsApp message notifications</description>
+    </key>
+    <key name="message-notification-when-focused" type="b">
+      <default>false</default>
+      <summary>Show notifications when focused</summary>
+      <description>Show message notifications even when window is focused</description>
+    </key>
+    <key name="message-preview-enabled" type="b">
+      <default>true</default>
+      <summary>Show message previews</summary>
+      <description>Show message content in notifications</description>
+    </key>
+    <key name="message-preview-length" type="i">
+      <default>50</default>
+      <summary>Message preview length</summary>
+      <description>Maximum characters to show in message preview</description>
+    </key>
+
+    <!-- Do Not Disturb Mode -->
+    <key name="dnd-mode-enabled" type="b">
+      <default>false</default>
+      <summary>Enable Do Not Disturb mode</summary>
+      <description>Master toggle for Do Not Disturb mode</description>
+    </key>
+    <key name="dnd-allow-background-notifications" type="b">
+      <default>true</default>
+      <summary>Allow background notifications during DND</summary>
+      <description>Show background notifications even during DND</description>
+    </key>
+    <key name="dnd-schedule-enabled" type="b">
+      <default>false</default>
+      <summary>Enable scheduled DND</summary>
+      <description>Automatically enable DND on a schedule</description>
+    </key>
+    <key name="dnd-start-time" type="s">
+      <default>"22:00"</default>
+      <summary>DND start time</summary>
+      <description>Time to automatically start DND (24-hour format)</description>
+    </key>
+    <key name="dnd-end-time" type="s">
+      <default>"08:00"</default>
+      <summary>DND end time</summary>
+      <description>Time to automatically end DND (24-hour format)</description>
+    </key>
+
+    <!-- System Notifications -->
+    <key name="show-system-notifications" type="b">
+      <default>true</default>
+      <summary>Show system notifications</summary>
+      <description>Show notifications for downloads, errors, and system events</description>
+    </key>
   </schema>
 </schemalist>
