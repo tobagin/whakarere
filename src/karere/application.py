@@ -461,16 +461,31 @@ class KarereApplication(Adw.Application):
                 height = self.main_window.get_height()
                 is_maximized = self.main_window.is_maximized()
                 
+                # Get window position (only if not maximized)
+                x, y = -1, -1
+                if not is_maximized:
+                    # Get the window position
+                    try:
+                        surface = self.main_window.get_surface()
+                        if surface:
+                            # For Wayland/X11 compatibility, we'll use the surface position
+                            # Note: Position saving might not work on all Wayland compositors
+                            pass  # GTK4 doesn't provide direct position access
+                    except Exception as e:
+                        self.logger.debug(f"Could not get window position: {e}")
+                
                 # Save to settings
                 settings = Gio.Settings.new("io.github.tobagin.karere")
                 settings.set_int("window-width", width)
                 settings.set_int("window-height", height)
                 settings.set_boolean("window-maximized", is_maximized)
+                settings.set_int("window-x", x)
+                settings.set_int("window-y", y)
                 
                 # Force settings sync
                 settings.sync()
                 
-                self.logger.info(f"Window state saved: {width}x{height}, maximized: {is_maximized}")
+                self.logger.info(f"Window state saved: {width}x{height} at ({x},{y}), maximized: {is_maximized}")
                 
         except Exception as e:
             self.logger.error(f"Failed to save window state: {e}")
