@@ -84,6 +84,8 @@
           <li>Complete removal of debug code and development artifacts</li>
           <li>Comprehensive test suites for all major components</li>
           <li>Production-ready user experience with state persistence</li>
+          <li>Window position saving and restoration (X11/Wayland compatible)</li>
+          <li>Improved window state management with size, position, and maximized state</li>
         </ul>
       </description>
     </release>
