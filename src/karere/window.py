@@ -503,12 +503,20 @@ class KarereWindow(Adw.ApplicationWindow):
                         }
                     ];
                     
-                    // Run all detection methods
-                    for (const method of detectionMethods) {
-                        const methodCount = method();
-                        totalUnread += methodCount;
+                    // Run all detection methods and take the highest count (not sum)
+                    let detectionResults = [];
+                    for (let i = 0; i < detectionMethods.length; i++) {
+                        const methodCount = detectionMethods[i]();
+                        detectionResults.push(methodCount);
+                        console.log(`Karere: Detection method ${i+1} found: ${methodCount} unread`);
                         if (methodCount > 0) hasNewMessages = true;
                     }
+                    
+                    // Use the highest count from valid methods, but avoid obviously wrong counts
+                    const validCounts = detectionResults.filter(count => count >= 0 && count < 999);
+                    totalUnread = validCounts.length > 0 ? Math.max(...validCounts) : 0;
+                    
+                    console.log(`Karere: Detection results: [${detectionResults.join(', ')}], final count: ${totalUnread}`);
                     
                     // Log detection results when there are changes
                     if (totalUnread !== lastMessageCount) {

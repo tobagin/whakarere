@@ -284,6 +284,8 @@ class NotificationManager:
             if self.session_background_shown:
                 self.logger.debug("Background notification blocked: 'first-session-only' and already shown this session")
                 return False
+            else:
+                self.logger.debug("Background notification allowed: 'first-session-only' and not yet shown this session")
         # frequency == "always" - continue to additional checks
         
         # Enhanced rate limiting for background notifications (only for 'always' mode)
@@ -429,6 +431,7 @@ class NotificationManager:
             frequency = self.settings.get_string("background-notification-frequency")
             if frequency == "first-session-only":
                 self.session_background_shown = True
+                self.logger.debug(f"Session background shown flag set to True for 'first-session-only' mode")
             self.last_background_notification_time = datetime.now()
     
     def _on_settings_changed(self, settings, key):
