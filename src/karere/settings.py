@@ -18,9 +18,25 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
     
     __gtype_name__ = 'KarereSettingsDialog'
     
+    # General page template children
     theme_row = Gtk.Template.Child()
     persistent_cookies_row = Gtk.Template.Child()
     developer_tools_row = Gtk.Template.Child()
+    
+    # Notifications page template children
+    message_notifications_row = Gtk.Template.Child()
+    background_frequency_row = Gtk.Template.Child()
+    system_notifications_row = Gtk.Template.Child()
+    message_settings_group = Gtk.Template.Child()
+    message_preview_row = Gtk.Template.Child()
+    message_preview_length_row = Gtk.Template.Child()
+    message_when_focused_row = Gtk.Template.Child()
+    dnd_enabled_row = Gtk.Template.Child()
+    dnd_background_row = Gtk.Template.Child()
+    dnd_schedule_row = Gtk.Template.Child()
+    dnd_start_entry = Gtk.Template.Child()
+    dnd_end_entry = Gtk.Template.Child()
+    dnd_status_page = Gtk.Template.Child()
     
     def __init__(self, parent_window):
         super().__init__()
@@ -34,22 +50,59 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
     
     def _setup_signals(self):
         """Set up signal connections."""
+        # General settings signals
         self.theme_row.connect("notify::selected", self._on_theme_changed)
         self.persistent_cookies_row.connect("notify::active", self._on_persistent_cookies_changed)
         self.developer_tools_row.connect("notify::active", self._on_developer_tools_changed)
+        
+        # Notification settings signals
+        self.message_notifications_row.connect("notify::active", self._on_message_notifications_changed)
+        self.background_frequency_row.connect("notify::selected", self._on_background_frequency_changed)
+        self.system_notifications_row.connect("notify::active", self._on_system_notifications_changed)
+        self.message_preview_row.connect("notify::active", self._on_message_preview_changed)
+        self.message_preview_length_row.connect("notify::value", self._on_message_preview_length_changed)
+        self.message_when_focused_row.connect("notify::active", self._on_message_when_focused_changed)
+        
+        # DND settings signals
+        self.dnd_enabled_row.connect("notify::active", self._on_dnd_enabled_changed)
+        self.dnd_background_row.connect("notify::active", self._on_dnd_background_changed)
+        self.dnd_schedule_row.connect("notify::active", self._on_dnd_schedule_changed)
+        self.dnd_start_entry.connect("notify::text", self._on_dnd_start_time_changed)
+        self.dnd_end_entry.connect("notify::text", self._on_dnd_end_time_changed)
     
     def _load_settings(self):
         """Load current settings from GSettings."""
-        # Load theme setting
+        # Load general settings
         theme = self.settings.get_string("theme")
         theme_index = {"follow-system": 0, "light": 1, "dark": 2}.get(theme, 0)
         self.theme_row.set_selected(theme_index)
         
-        # Load persistent cookies setting
         self.persistent_cookies_row.set_active(self.settings.get_boolean("persistent-cookies"))
-        
-        # Load developer tools setting
         self.developer_tools_row.set_active(self.settings.get_boolean("developer-tools"))
+        
+        # Load notification settings
+        self.message_notifications_row.set_active(self.settings.get_boolean("show-message-notifications"))
+        
+        bg_freq = self.settings.get_string("background-notification-frequency")
+        bg_freq_index = {"always": 0, "first-session-only": 1, "never": 2}.get(bg_freq, 0)
+        self.background_frequency_row.set_selected(bg_freq_index)
+        
+        self.system_notifications_row.set_active(self.settings.get_boolean("show-system-notifications"))
+        self.message_preview_row.set_active(self.settings.get_boolean("message-preview-enabled"))
+        self.message_preview_length_row.set_value(self.settings.get_int("message-preview-length"))
+        self.message_when_focused_row.set_active(self.settings.get_boolean("message-notification-when-focused"))
+        
+        # Load DND settings
+        self.dnd_enabled_row.set_active(self.settings.get_boolean("dnd-mode-enabled"))
+        self.dnd_background_row.set_active(self.settings.get_boolean("dnd-allow-background-notifications"))
+        self.dnd_schedule_row.set_active(self.settings.get_boolean("dnd-schedule-enabled"))
+        self.dnd_start_entry.set_text(self.settings.get_string("dnd-start-time"))
+        self.dnd_end_entry.set_text(self.settings.get_string("dnd-end-time"))
+        
+        # Update DND status and visibility
+        self._update_dnd_status()
+        self._update_dnd_visibility()
+        self._update_message_settings_visibility()
     
     def _on_theme_changed(self, row, param):
         """Handle theme selection change."""
@@ -141,3 +194,138 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
             crash_settings_dialog.present()
         except Exception as e:
             print(f"Error opening crash settings dialog: {e}")
+    
+    # Notification settings signal handlers
+    def _on_message_notifications_changed(self, row, param):
+        """Handle message notifications toggle."""
+        enabled = row.get_active()
+        self.settings.set_boolean("show-message-notifications", enabled)
+        self._update_message_settings_visibility()
+    
+    def _on_background_frequency_changed(self, row, param):
+        """Handle background notification frequency change."""
+        selected = row.get_selected()
+        frequencies = ["always", "first-session-only", "never"]
+        if selected < len(frequencies):
+            frequency = frequencies[selected]
+            self.settings.set_string("background-notification-frequency", frequency)
+    
+    def _on_system_notifications_changed(self, row, param):
+        """Handle system notifications toggle."""
+        self.settings.set_boolean("show-system-notifications", row.get_active())
+    
+    def _on_message_preview_changed(self, row, param):
+        """Handle message preview toggle."""
+        enabled = row.get_active()
+        self.settings.set_boolean("message-preview-enabled", enabled)
+        self._update_message_preview_length_visibility()
+    
+    def _on_message_preview_length_changed(self, row, param):
+        """Handle message preview length change."""
+        self.settings.set_int("message-preview-length", int(row.get_value()))
+    
+    def _on_message_when_focused_changed(self, row, param):
+        """Handle message when focused toggle."""
+        self.settings.set_boolean("message-notification-when-focused", row.get_active())
+    
+    # DND settings signal handlers
+    def _on_dnd_enabled_changed(self, row, param):
+        """Handle DND enabled toggle."""
+        enabled = row.get_active()
+        self.settings.set_boolean("dnd-mode-enabled", enabled)
+        self._update_dnd_status()
+        self._update_dnd_visibility()
+    
+    def _on_dnd_background_changed(self, row, param):
+        """Handle DND background notifications toggle."""
+        self.settings.set_boolean("dnd-allow-background-notifications", row.get_active())
+    
+    def _on_dnd_schedule_changed(self, row, param):
+        """Handle DND schedule toggle."""
+        enabled = row.get_active()
+        self.settings.set_boolean("dnd-schedule-enabled", enabled)
+        self._update_dnd_time_visibility()
+    
+    def _on_dnd_start_time_changed(self, entry, param):
+        """Handle DND start time change."""
+        time_text = entry.get_text()
+        if self._validate_time_format(time_text):
+            self.settings.set_string("dnd-start-time", time_text)
+            self._update_dnd_status()
+    
+    def _on_dnd_end_time_changed(self, entry, param):
+        """Handle DND end time change."""
+        time_text = entry.get_text()
+        if self._validate_time_format(time_text):
+            self.settings.set_string("dnd-end-time", time_text)
+            self._update_dnd_status()
+    
+    def _validate_time_format(self, time_str):
+        """Validate time format (HH:MM)."""
+        try:
+            parts = time_str.split(":")
+            if len(parts) != 2:
+                return False
+            hours, minutes = int(parts[0]), int(parts[1])
+            return 0 <= hours <= 23 and 0 <= minutes <= 59
+        except (ValueError, IndexError):
+            return False
+    
+    def _update_dnd_status(self):
+        """Update DND status display."""
+        dnd_enabled = self.settings.get_boolean("dnd-mode-enabled")
+        schedule_enabled = self.settings.get_boolean("dnd-schedule-enabled")
+        
+        if dnd_enabled:
+            if schedule_enabled:
+                start_time = self.settings.get_string("dnd-start-time")
+                end_time = self.settings.get_string("dnd-end-time")
+                self.dnd_status_page.set_title("DND Scheduled")
+                self.dnd_status_page.set_description(f"Active from {start_time} to {end_time}")
+            else:
+                self.dnd_status_page.set_title("DND Active")
+                self.dnd_status_page.set_description("Do Not Disturb is currently enabled")
+        else:
+            self.dnd_status_page.set_title("DND Inactive")
+            self.dnd_status_page.set_description("Do Not Disturb is currently disabled")
+    
+    def _update_dnd_visibility(self):
+        """Update visibility of DND sub-options based on main DND toggle."""
+        dnd_enabled = self.settings.get_boolean("dnd-mode-enabled")
+        
+        # Show/hide DND sub-options
+        self.dnd_background_row.set_visible(dnd_enabled)
+        self.dnd_schedule_row.set_visible(dnd_enabled)
+        
+        # Update time entries visibility
+        self._update_dnd_time_visibility()
+    
+    def _update_dnd_time_visibility(self):
+        """Update visibility of DND time entries based on scheduled DND toggle."""
+        dnd_enabled = self.settings.get_boolean("dnd-mode-enabled")
+        schedule_enabled = self.settings.get_boolean("dnd-schedule-enabled")
+        
+        # Show time entries only if both DND and scheduled DND are enabled
+        show_times = dnd_enabled and schedule_enabled
+        self.dnd_start_entry.set_visible(show_times)
+        self.dnd_end_entry.set_visible(show_times)
+    
+    def _update_message_settings_visibility(self):
+        """Update visibility of message settings based on message notifications toggle."""
+        message_notifications_enabled = self.settings.get_boolean("show-message-notifications")
+        
+        # Show/hide entire message settings group
+        self.message_settings_group.set_visible(message_notifications_enabled)
+        
+        # Update preview length visibility (only if group is visible)
+        if message_notifications_enabled:
+            self._update_message_preview_length_visibility()
+    
+    def _update_message_preview_length_visibility(self):
+        """Update visibility of preview length based on message notifications and preview toggles."""
+        message_notifications_enabled = self.settings.get_boolean("show-message-notifications")
+        message_preview_enabled = self.settings.get_boolean("message-preview-enabled")
+        
+        # Show preview length only if both message notifications and preview are enabled
+        show_preview_length = message_notifications_enabled and message_preview_enabled
+        self.message_preview_length_row.set_visible(show_preview_length)

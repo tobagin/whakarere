@@ -1450,3 +1450,129 @@ Results: 8 passed, 0 failed
 **Related Documentation**: 
 - Full roadmap detailed in `NOTIFICATION-ENHANCEMENT-PLAN.md`
 - Part of comprehensive notification system enhancement project
+
+### Phase 1.2: UI Implementation for Notification Settings ✅
+**Status**: Completed  
+**Priority**: High  
+**Completion Date**: 2025-07-20 22:45  
+
+**Description**: Implemented comprehensive UI for the notification management system, creating a complete preferences page with all notification controls, message settings, and Do Not Disturb configuration.
+
+**Details**:
+- **Notifications Preference Page**: Added complete notifications page to settings.blp with multiple organized groups
+- **Main Notifications Group**: Controls for message notifications, background frequency, and system notifications
+- **Message Settings Group**: Preview controls, length settings, and focus-based notification options
+- **Do Not Disturb Group**: Manual toggle, scheduled DND, background exceptions, and status display
+- **Settings Integration**: Complete signal handlers and persistence logic in settings.py
+- **Real-time Updates**: Dynamic DND status display with time validation and scheduling information
+- **Input Validation**: Time format validation for DND scheduling (HH:MM format)
+
+**UI Components Added**:
+1. `message_notifications_row` - Toggle for WhatsApp message notifications
+2. `background_frequency_row` - Dropdown for background notification frequency
+3. `system_notifications_row` - Toggle for system notifications
+4. `message_preview_row` - Toggle for message content preview
+5. `message_preview_length_row` - Spin control for preview character length (10-200)
+6. `message_when_focused_row` - Toggle for notifications when window focused
+7. `dnd_enabled_row` - Master Do Not Disturb toggle
+8. `dnd_background_row` - Allow background notifications during DND
+9. `dnd_schedule_row` - Enable scheduled DND
+10. `dnd_start_entry` & `dnd_end_entry` - Time inputs for DND schedule
+11. `dnd_status_page` - Dynamic status display for DND state
+
+**Signal Handlers Implemented**:
+- All 11 notification settings have proper signal handlers
+- Settings persistence through GSettings integration
+- Real-time UI updates and validation
+- Dynamic DND status updates based on current configuration
+- Time format validation with user feedback
+
+**Files Modified**:
+- `src/karere/ui/settings.blp` - Added complete notifications preference page
+- `src/karere/settings.py` - Added all template children, signal handlers, and settings logic
+
+**Technical Features**:
+- Professional UI layout with organized preference groups
+- Comprehensive settings loading and saving
+- Input validation for time entries
+- Dynamic status updates for DND configuration
+- Integration with existing settings system
+- Production-ready error handling
+
+**Testing**:
+- Application builds and installs successfully
+- UI components render correctly
+- Settings persistence validated
+- All notification controls functional
+
+**Next Steps**: 
+- Phase 1.3: NotificationManager class implementation
+- Phase 1.4: Integration with existing notification system
+- Phase 1.5: Background notification logic implementation
+
+**Related Documentation**: 
+- UI implementation aligned with Phase 1.2 in `NOTIFICATION-ENHANCEMENT-PLAN.md`
+- Complete foundation for professional-grade notification management system
+
+### Phase 1.2 Enhancement: Conditional Visibility and UX Improvements ✅
+**Status**: Completed  
+**Priority**: Medium  
+**Completion Date**: 2025-07-20 22:59  
+
+**Description**: Enhanced the notification settings UI with intelligent conditional visibility, improved DND scheduling interface, and professional progressive disclosure patterns.
+
+**Details**:
+- **Menu Label Consistency**: Changed menu entry from "Settings" to "Preferences" to match dialog title
+- **DND Schedule Redesign**: Replaced cramped horizontal layout with clean separate EntryRow widgets for start/end times
+- **Conditional Visibility System**: Implemented comprehensive smart visibility for all notification settings
+- **Progressive Disclosure**: Settings groups and options appear/disappear contextually based on parent toggles
+- **Professional UX**: Following modern system preferences patterns with logical hierarchy
+
+**Conditional Visibility Rules Implemented**:
+1. **Message Settings Group**: Entire group hidden when "Message Notifications" disabled
+2. **Preview Length Control**: Hidden when "Show Message Preview" disabled  
+3. **DND Sub-options**: "Allow Background" and "Scheduled DND" hidden when main DND disabled
+4. **DND Time Entries**: Hidden when "Scheduled DND" disabled
+5. **Smart Dependencies**: Multi-level conditional visibility (e.g., time entries require both DND AND scheduling enabled)
+
+**UI Improvements Made**:
+- Replaced ActionRow with complex horizontal layout → Clean separate EntryRow widgets for DND times
+- Added intelligent visibility controls for 8 different UI elements
+- Implemented 3 visibility update methods with proper dependency handling
+- Enhanced signal handlers to trigger visibility updates on setting changes
+- Created professional progressive disclosure experience
+
+**Technical Implementation**:
+- Added `message_settings_group` template child for group-level visibility control
+- Implemented `_update_message_settings_visibility()` method
+- Enhanced `_update_dnd_visibility()` and `_update_dnd_time_visibility()` methods
+- Updated signal handlers to call visibility updates on toggle changes
+- Optimized visibility logic to handle complex dependencies efficiently
+
+**User Experience Benefits**:
+- **Reduced Cognitive Load**: Only relevant options visible at any time
+- **Cleaner Interface**: No orphaned or irrelevant controls
+- **Guided Configuration**: Natural flow through related settings
+- **Professional Feel**: Matches system preferences UX patterns
+- **Better Organization**: Clear hierarchy and logical grouping
+
+**Files Modified**:
+- `src/karere/ui/window.blp` - Changed menu label to "Preferences"
+- `src/karere/ui/settings.blp` - Replaced DND schedule with clean EntryRow widgets
+- `src/karere/settings.py` - Added comprehensive conditional visibility system
+
+**Testing Results**:
+- All conditional visibility rules working correctly
+- Smooth transitions when toggling parent settings
+- No UI artifacts or orphaned controls
+- Professional progressive disclosure behavior
+- Settings persistence maintained through visibility changes
+
+**Next Steps**: 
+- Phase 1.3: NotificationManager class implementation
+- Phase 1.4: Integration with existing notification system
+- Phase 1.5: Background notification logic implementation
+
+**Related Documentation**: 
+- Enhanced UI implementation building on Phase 1.2 in `NOTIFICATION-ENHANCEMENT-PLAN.md`
+- Professional-grade notification management system with modern UX patterns
