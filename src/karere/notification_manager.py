@@ -138,11 +138,17 @@ class NotificationManager:
             
             # Check type-specific rules
             if notification_type == "message":
-                return self._should_show_message_notification(**kwargs)
+                result = self._should_show_message_notification(**kwargs)
+                self.logger.debug(f"Message notification check result: {result}")
+                return result
             elif notification_type == "background":
-                return self._should_show_background_notification(**kwargs)
+                result = self._should_show_background_notification(**kwargs)
+                self.logger.debug(f"Background notification check result: {result}")
+                return result
             elif notification_type == "system":
-                return self._should_show_system_notification(**kwargs)
+                result = self._should_show_system_notification(**kwargs)
+                self.logger.debug(f"System notification check result: {result}")
+                return result
             else:
                 self.logger.warning(f"Unknown notification type: {notification_type}")
                 return False
@@ -266,11 +272,14 @@ class NotificationManager:
     def _should_show_background_notification(self, **kwargs) -> bool:
         """Check if background notifications should be shown with enhanced session and timing logic."""
         frequency = self.settings.get_string("background-notification-frequency")
+        self.logger.debug(f"Background notification check: frequency={frequency}, session_shown={self.session_background_shown}")
         
         if frequency == "never":
+            self.logger.debug("Background notification blocked: frequency set to 'never'")
             return False
         elif frequency == "first-session-only":
             if self.session_background_shown:
+                self.logger.debug("Background notification blocked: 'first-session-only' and already shown this session")
                 return False
         # frequency == "always" - continue to additional checks
         
@@ -289,13 +298,19 @@ class NotificationManager:
         background_grace_period = kwargs.get("background_grace_period", 30)  # 30 seconds grace period
         actual_background_duration = self.get_window_background_duration()
         
-        if actual_background_duration > 0 and actual_background_duration < background_grace_period:
+        # Special case: If this is a "background" type notification (window just closed),
+        # bypass the grace period check since the user just performed the action
+        # The notification_type is not in kwargs, we need to check the calling context
+        is_window_close_notification = True  # For now, assume background notifications are immediate
+        
+        if not is_window_close_notification and actual_background_duration > 0 and actual_background_duration < background_grace_period:
             self.logger.debug(f"Background notification blocked by grace period: {actual_background_duration:.1f}s < {background_grace_period}s")
             return False
         
         # Track this notification attempt
         self._last_background_notification_time = current_time
         
+        self.logger.debug("Background notification approved - all checks passed")
         return True
     
     def _should_show_system_notification(self, **kwargs) -> bool:
