@@ -1031,18 +1031,24 @@ class KarereWindow(Adw.ApplicationWindow):
     def _on_notification_message(self, user_content_manager, message):
         """Handle notification messages from JavaScript with NotificationManager integration."""
         try:
-            # Get the message data
-            js_value = message.get_js_value()
-            if js_value.is_object():
-                sender = js_value.object_get_property("sender").to_string() if js_value.object_has_property("sender") else "WhatsApp"
-                msg_text = js_value.object_get_property("message").to_string() if js_value.object_has_property("message") else "New message"
-                count = js_value.object_get_property("count").to_number() if js_value.object_has_property("count") else 1
+            # Get the message data - handle both old and new WebKit API
+            try:
+                js_value = message.get_js_value()
+            except AttributeError:
+                # Fallback for older WebKit versions
+                js_value = message
+                
+            if hasattr(js_value, 'is_object') and js_value.is_object():
+                # Extract message properties with fallbacks
+                sender = self._extract_js_property(js_value, "sender", "WhatsApp")
+                msg_text = self._extract_js_property(js_value, "message", "New message")
+                count = self._extract_js_property(js_value, "count", 1, is_number=True)
                 
                 # Get enhanced data for NotificationManager
-                message_content = js_value.object_get_property("messageContent").to_string() if js_value.object_has_property("messageContent") else ""
-                is_window_focused = js_value.object_get_property("isWindowFocused").to_boolean() if js_value.object_has_property("isWindowFocused") else False
-                timestamp = js_value.object_get_property("timestamp").to_number() if js_value.object_has_property("timestamp") else 0
-                message_type = js_value.object_get_property("messageType").to_string() if js_value.object_has_property("messageType") else "message"
+                message_content = self._extract_js_property(js_value, "messageContent", "")
+                is_window_focused = self._extract_js_property(js_value, "isWindowFocused", False, is_boolean=True)
+                timestamp = self._extract_js_property(js_value, "timestamp", 0, is_number=True)
+                message_type = self._extract_js_property(js_value, "messageType", "message")
                 
                 # Prepare notification details
                 notification_title = f"New message from {sender}" if sender != "WhatsApp" else "WhatsApp"
@@ -1061,11 +1067,28 @@ class KarereWindow(Adw.ApplicationWindow):
                 )
             else:
                 self.logger.debug("Received non-object notification message")
+                # Fallback for simple string messages
+                self.app.send_notification("WhatsApp", "New message received", notification_type="message")
                 
         except Exception as e:
             self.logger.error(f"Error handling notification message: {e}")
             # Fallback notification
             self.app.send_notification("WhatsApp", "New message received", notification_type="message")
+    
+    def _extract_js_property(self, js_value, property_name, default_value, is_number=False, is_boolean=False):
+        """Safely extract a property from JavaScript value with fallback."""
+        try:
+            if hasattr(js_value, 'object_has_property') and js_value.object_has_property(property_name):
+                prop = js_value.object_get_property(property_name)
+                if is_number:
+                    return prop.to_number() if hasattr(prop, 'to_number') else default_value
+                elif is_boolean:
+                    return prop.to_boolean() if hasattr(prop, 'to_boolean') else default_value
+                else:
+                    return prop.to_string() if hasattr(prop, 'to_string') else default_value
+            return default_value
+        except Exception:
+            return default_value
 
     def _on_window_focus_changed(self, window, pspec):
         """Handle window focus changes for background notification tracking."""

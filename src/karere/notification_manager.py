@@ -7,7 +7,8 @@ Part of Phase 1.3 of the comprehensive notification enhancement system.
 
 import gi
 import logging
-from datetime import datetime, time
+import time
+from datetime import datetime, time as datetime_time
 from typing import Optional, Dict, Any, Union
 
 gi.require_version("Gtk", "4.0")
@@ -343,7 +344,7 @@ class NotificationManager:
             self.logger.error(f"Error checking scheduled DND: {e}")
             return False
     
-    def _parse_time(self, time_str: str) -> Optional[time]:
+    def _parse_time(self, time_str: str) -> Optional[datetime_time]:
         """Parse time string in HH:MM format."""
         try:
             parts = time_str.split(":")
@@ -355,7 +356,7 @@ class NotificationManager:
             if not (0 <= hours <= 23 and 0 <= minutes <= 59):
                 return None
             
-            return time(hours, minutes)
+            return datetime_time(hours, minutes)
             
         except (ValueError, IndexError):
             return None

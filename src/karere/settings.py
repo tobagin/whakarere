@@ -36,7 +36,6 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
     dnd_schedule_row = Gtk.Template.Child()
     dnd_start_entry = Gtk.Template.Child()
     dnd_end_entry = Gtk.Template.Child()
-    dnd_status_page = Gtk.Template.Child()
     
     def __init__(self, parent_window):
         super().__init__()
@@ -273,21 +272,9 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
     
     def _update_dnd_status(self):
         """Update DND status display."""
-        dnd_enabled = self.settings.get_boolean("dnd-mode-enabled")
-        schedule_enabled = self.settings.get_boolean("dnd-schedule-enabled")
-        
-        if dnd_enabled:
-            if schedule_enabled:
-                start_time = self.settings.get_string("dnd-start-time")
-                end_time = self.settings.get_string("dnd-end-time")
-                self.dnd_status_page.set_title("DND Scheduled")
-                self.dnd_status_page.set_description(f"Active from {start_time} to {end_time}")
-            else:
-                self.dnd_status_page.set_title("DND Active")
-                self.dnd_status_page.set_description("Do Not Disturb is currently enabled")
-        else:
-            self.dnd_status_page.set_title("DND Inactive")
-            self.dnd_status_page.set_description("Do Not Disturb is currently disabled")
+        # DND status page was removed - this method now only serves as a placeholder
+        # for potential future DND status updates
+        pass
     
     def _update_dnd_visibility(self):
         """Update visibility of DND sub-options based on main DND toggle."""
