@@ -74,7 +74,7 @@ def get_version():
         return env_version
     
     # Method 5: Final fallback
-    return "0.1.9"
+    return "0.4.0"
 
 
 def get_version_info():
