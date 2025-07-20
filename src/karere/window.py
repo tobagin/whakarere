@@ -42,6 +42,10 @@ class KarereWindow(Adw.ApplicationWindow):
         
         # Connect close event to background running
         self.connect("close-request", self._on_close_request)
+        
+        # Connect window focus events for background notification tracking
+        self.connect("notify::is-active", self._on_window_focus_changed)
+        
         self.logger.info("KarereWindow initialization complete")
     
     def _setup_actions(self):
@@ -1062,6 +1066,16 @@ class KarereWindow(Adw.ApplicationWindow):
             self.logger.error(f"Error handling notification message: {e}")
             # Fallback notification
             self.app.send_notification("WhatsApp", "New message received", notification_type="message")
+
+    def _on_window_focus_changed(self, window, pspec):
+        """Handle window focus changes for background notification tracking."""
+        try:
+            is_focused = self.is_active()
+            if hasattr(self.app, 'notification_manager') and self.app.notification_manager:
+                self.app.notification_manager.on_window_focus_changed(is_focused)
+                self.logger.debug(f"Window focus changed: {'focused' if is_focused else 'unfocused'}")
+        except Exception as e:
+            self.logger.error(f"Error handling window focus change: {e}")
 
     def setup_download_directory(self):
         """Set up the downloads directory with comprehensive error handling."""

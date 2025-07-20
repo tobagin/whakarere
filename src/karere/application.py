@@ -336,6 +336,9 @@ class KarereApplication(Adw.Application):
                 processed_message = self.notification_manager._process_message_content(message, notification_type, **kwargs)
                 message = processed_message
                 
+                # Track the notification in the manager
+                self.notification_manager.track_background_notification(notification_type, title)
+                
             except Exception as e:
                 self.logger.error(f"Error in NotificationManager filtering: {e}")
                 # Continue with original notification if manager fails

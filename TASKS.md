@@ -604,6 +604,111 @@ Production Hardening Test Suite
 
 **Related TODO**: Part of TODO.md section 1.3 Production Hardening
 
+### Phase 1.5: Enhanced Background Notification Management System ✅
+**Status**: Completed  
+**Priority**: High  
+**Completion Date**: 2025-01-20  
+
+**Description**: Implemented comprehensive background notification management with sophisticated session tracking, frequency management, rate limiting, and intelligent window focus monitoring for optimal background notification behavior.
+
+**Implementation Details**:
+
+**Enhanced Session Tracking**:
+- **Comprehensive Session State**: Added detailed session tracking including start time, notification counts, and window focus states
+- **Background Duration Monitoring**: Real-time tracking of how long window has been in background state
+- **Notification History**: Session-based notification tracking with automatic cleanup (maintains last 100 notifications)
+- **Statistical Analytics**: Comprehensive session statistics including notifications per hour and background durations
+
+**Advanced Rate Limiting**:
+- **Cooldown Periods**: 5-minute minimum cooldown between background notifications to prevent spam
+- **Grace Period Management**: 30-second grace period prevents immediate notifications when window goes to background
+- **Intelligent Timing**: Real-time background duration calculation for accurate notification timing decisions
+- **Session-Aware Logic**: First-session-only frequency respects actual session state rather than simple boolean flags
+
+**Window Focus Integration**:
+- **Real-time Focus Tracking**: Window focus state changes immediately update NotificationManager state
+- **Background Duration Calculation**: Precise timing of how long window has been in background
+- **Focus Event Handling**: GTK window focus events (`notify::is-active`) integrated with notification system
+- **State Synchronization**: Window focus state synchronized between window.py and NotificationManager
+
+**Comprehensive Background Logic** (`src/karere/notification_manager.py:191-297`):
+```python
+def _should_show_background_notification(self, **kwargs) -> bool:
+    # Enhanced rate limiting for background notifications
+    current_time = time.time()
+    
+    # Check cooldown period (minimum time between background notifications)
+    background_cooldown = 300  # 5 minutes default cooldown
+    if hasattr(self, '_last_background_notification_time'):
+        time_since_last = current_time - self._last_background_notification_time
+        if time_since_last < background_cooldown:
+            return False
+    
+    # Check if window has been in background long enough to warrant notification
+    background_grace_period = kwargs.get("background_grace_period", 30)
+    actual_background_duration = self.get_window_background_duration()
+    
+    if actual_background_duration > 0 and actual_background_duration < background_grace_period:
+        return False
+```
+
+**Session Management Methods** (`src/karere/notification_manager.py:58-119`):
+- `on_window_focus_changed()`: Handles window focus state transitions with precise timing
+- `get_window_background_duration()`: Calculates exact background duration in real-time  
+- `track_background_notification()`: Comprehensive notification tracking with session context
+- `get_background_notification_stats()`: Detailed session analytics and statistics
+
+**Integration Enhancements**:
+- **Application-Level Tracking**: NotificationManager tracking integrated in `application.py:340`
+- **Window Focus Events**: GTK window focus events connected to NotificationManager in `window.py:47`
+- **Cross-Component Synchronization**: Real-time state synchronization between window, application, and notification manager
+
+**Technical Architecture**:
+```
+Window Focus Events → GTK notify::is-active → NotificationManager.on_window_focus_changed() →
+Real-time Background Duration Calculation → Enhanced Rate Limiting → Intelligent Notification Decisions
+```
+
+**Background Notification Features**:
+1. **Smart Frequency Management**: Respects "always", "first-session-only", and "never" settings with enhanced logic
+2. **Rate Limiting**: Prevents notification spam with configurable cooldown periods
+3. **Grace Period Handling**: Prevents immediate notifications when briefly switching windows
+4. **Session Analytics**: Comprehensive statistics for debugging and user insights
+5. **Focus-Aware Processing**: Notifications only when window actually loses focus
+
+**Performance Optimizations**:
+- Efficient session tracking with automatic cleanup of old notification records
+- Minimal overhead focus event handling with error recovery
+- Real-time calculations without blocking notification pipeline
+- Memory-efficient notification history management
+
+**Session Statistics Available**:
+- Session duration in minutes
+- Total notifications sent (all types)
+- Background-specific notification count
+- Notifications per hour rate
+- Current window focus state
+- Real-time background duration
+
+**Files Modified**:
+- `src/karere/notification_manager.py` - Enhanced background notification logic and session tracking
+  - Lines 39-49: Enhanced session state tracking initialization
+  - Lines 58-119: Comprehensive background notification management methods
+  - Lines 191-297: Sophisticated background notification filtering logic
+- `src/karere/application.py` - Integrated background notification tracking
+  - Line 340: NotificationManager tracking integration
+- `src/karere/window.py` - Window focus event handling integration
+  - Line 47: Window focus event connection
+  - Lines 1070-1078: Window focus change handler implementation
+
+**Benefits**:
+- ✅ **Intelligent Rate Limiting**: Prevents background notification spam while maintaining usefulness
+- ✅ **Session Awareness**: First-session-only mode works accurately with real session tracking
+- ✅ **Focus Intelligence**: Notifications only when window truly loses focus, not brief switches
+- ✅ **Real-time Analytics**: Comprehensive session statistics for debugging and optimization
+- ✅ **Performance Optimized**: Minimal overhead while providing sophisticated background management
+- ✅ **User Experience**: Smooth background notification behavior without interruption or spam
+
 ### Phase 1.4: Integration with Existing Notification System ✅
 **Status**: Completed  
 **Priority**: High  

@@ -36,14 +36,87 @@ class NotificationManager:
         self.settings = settings
         self.logger = logging.getLogger("karere.notification_manager")
         
-        # Session state tracking
+        # Enhanced session state tracking
         self.session_background_shown = False
+        self.session_start_time = time.time()
+        self.background_notification_count = 0
+        self.window_is_focused = True
+        self.window_background_start_time = None
         self.last_background_notification_time = None
+        
+        # Background notification timing and rate limiting
+        self._last_background_notification_time = 0
+        self._background_session_notifications = []  # Track all background notifications in current session
         
         # Connect to settings changes for real-time updates
         self.settings.connect("changed", self._on_settings_changed)
         
         self.logger.info("NotificationManager initialized")
+    
+    # Background notification management methods
+    
+    def on_window_focus_changed(self, is_focused: bool):
+        """Handle window focus state changes for background notification tracking."""
+        previous_focus = self.window_is_focused
+        self.window_is_focused = is_focused
+        current_time = time.time()
+        
+        if previous_focus and not is_focused:
+            # Window just went to background
+            self.window_background_start_time = current_time
+            self.logger.debug("Window moved to background, starting background tracking")
+        elif not previous_focus and is_focused:
+            # Window just came to foreground
+            if self.window_background_start_time:
+                background_duration = current_time - self.window_background_start_time
+                self.logger.debug(f"Window returned to foreground after {background_duration:.1f}s in background")
+            self.window_background_start_time = None
+    
+    def get_window_background_duration(self) -> float:
+        """Get how long the window has been in the background (seconds)."""
+        if self.window_is_focused or self.window_background_start_time is None:
+            return 0.0
+        return time.time() - self.window_background_start_time
+    
+    def track_background_notification(self, notification_type: str, title: str):
+        """Track a background notification for session management."""
+        current_time = time.time()
+        notification_record = {
+            'type': notification_type,
+            'title': title,
+            'timestamp': current_time,
+            'session_time': current_time - self.session_start_time
+        }
+        
+        self._background_session_notifications.append(notification_record)
+        
+        if notification_type == "background":
+            self.background_notification_count += 1
+            self.session_background_shown = True
+            self.last_background_notification_time = current_time
+            
+        # Limit session notification history to last 100 notifications
+        if len(self._background_session_notifications) > 100:
+            self._background_session_notifications = self._background_session_notifications[-100:]
+        
+        self.logger.debug(f"Tracked background notification: {title} (total this session: {self.background_notification_count})")
+    
+    def get_background_notification_stats(self) -> dict:
+        """Get comprehensive background notification statistics for current session."""
+        current_time = time.time()
+        session_duration = current_time - self.session_start_time
+        
+        background_notifications = [n for n in self._background_session_notifications if n['type'] == 'background']
+        
+        return {
+            'session_duration_minutes': session_duration / 60,
+            'total_notifications': len(self._background_session_notifications),
+            'background_notifications': len(background_notifications),
+            'notifications_per_hour': (len(self._background_session_notifications) / session_duration) * 3600 if session_duration > 0 else 0,
+            'last_background_notification': self.last_background_notification_time,
+            'window_currently_focused': self.window_is_focused,
+            'current_background_duration': self.get_window_background_duration()
+        }
     
     def should_show_notification(self, notification_type: str, **kwargs) -> bool:
         """
@@ -103,8 +176,9 @@ class NotificationManager:
             # Send the notification
             self._send_system_notification(title, processed_message, **kwargs)
             
-            # Update session state
+            # Update session state and track background notifications
             self._update_session_state(notification_type, **kwargs)
+            self.track_background_notification(notification_type, title)
             
             self.logger.info(f"Notification sent: {title}")
             return True
@@ -189,7 +263,7 @@ class NotificationManager:
         return True
     
     def _should_show_background_notification(self, **kwargs) -> bool:
-        """Check if background notifications should be shown."""
+        """Check if background notifications should be shown with enhanced session and timing logic."""
         frequency = self.settings.get_string("background-notification-frequency")
         
         if frequency == "never":
@@ -197,7 +271,29 @@ class NotificationManager:
         elif frequency == "first-session-only":
             if self.session_background_shown:
                 return False
-        # frequency == "always" always shows
+        # frequency == "always" - continue to additional checks
+        
+        # Enhanced rate limiting for background notifications
+        current_time = time.time()
+        
+        # Check cooldown period (minimum time between background notifications)
+        background_cooldown = 300  # 5 minutes default cooldown
+        if hasattr(self, '_last_background_notification_time'):
+            time_since_last = current_time - self._last_background_notification_time
+            if time_since_last < background_cooldown:
+                self.logger.debug(f"Background notification blocked by cooldown: {time_since_last:.1f}s < {background_cooldown}s")
+                return False
+        
+        # Check if window has been in background long enough to warrant notification
+        background_grace_period = kwargs.get("background_grace_period", 30)  # 30 seconds grace period
+        actual_background_duration = self.get_window_background_duration()
+        
+        if actual_background_duration > 0 and actual_background_duration < background_grace_period:
+            self.logger.debug(f"Background notification blocked by grace period: {actual_background_duration:.1f}s < {background_grace_period}s")
+            return False
+        
+        # Track this notification attempt
+        self._last_background_notification_time = current_time
         
         return True
     
