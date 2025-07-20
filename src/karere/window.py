@@ -1508,7 +1508,15 @@ class KarereWindow(Adw.ApplicationWindow):
                 self.webview.stop_loading()
                 
                 # Clear any pending JavaScript operations
-                self.webview.run_javascript("window.stop();", None, None, None)
+                try:
+                    if hasattr(self.webview, 'evaluate_javascript'):
+                        self.webview.evaluate_javascript("window.stop();", -1, None, None, None, None, None)
+                    elif hasattr(self.webview, 'run_javascript'):
+                        self.webview.run_javascript("window.stop();", None, None, None)
+                    else:
+                        self.logger.debug("No JavaScript execution method available")
+                except Exception as e:
+                    self.logger.debug(f"JavaScript cleanup failed: {e}")
                 
                 # Disconnect signal handlers
                 self._disconnect_webview_signals()
