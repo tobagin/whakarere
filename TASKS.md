@@ -604,6 +604,100 @@ Production Hardening Test Suite
 
 **Related TODO**: Part of TODO.md section 1.3 Production Hardening
 
+### Phase 1.4: Integration with Existing Notification System ✅
+**Status**: Completed  
+**Priority**: High  
+**Completion Date**: 2025-01-20  
+
+**Description**: Integrated the NotificationManager from Phase 1.3 with the existing WhatsApp Web notification detection system, creating a seamless bridge between JavaScript notification detection and intelligent notification filtering.
+
+**Implementation Details**:
+
+**Enhanced JavaScript Notification Detection**:
+- **Comprehensive Context Passing**: Modified JavaScript notification detection to pass rich contextual data including:
+  - `messageContent`: Actual message text for preview processing
+  - `isWindowFocused`: Real-time window focus state for attention-aware filtering
+  - `timestamp`: Message timestamp for rate limiting and session tracking
+  - `messageType`: Explicitly identifies messages vs other notification types
+  - `sender`: Enhanced sender detection with multiple fallback selectors
+  - `count`: Unread message count for batch notification logic
+
+**NotificationManager Integration**:
+- **Seamless Filtering**: JavaScript notifications now flow through NotificationManager filtering logic
+- **Intelligent Processing**: Message content processing, DND filtering, and preview controls applied automatically
+- **Window Focus Awareness**: Notifications properly respect window focus state for distraction-free operation
+- **Enhanced Context**: Rich metadata enables sophisticated filtering and processing decisions
+
+**Message Handler Enhancement** (`src/karere/window.py:1027-1064`):
+```python
+def _on_notification_message(self, user_content_manager, message):
+    # Enhanced data extraction for NotificationManager
+    message_content = js_value.object_get_property("messageContent").to_string()
+    is_window_focused = js_value.object_get_property("isWindowFocused").to_boolean()
+    timestamp = js_value.object_get_property("timestamp").to_number()
+    message_type = js_value.object_get_property("messageType").to_string()
+    
+    # Pass comprehensive context to NotificationManager
+    self.app.send_notification(
+        notification_title, 
+        notification_body,
+        notification_type="message",
+        sender=sender,
+        message_content=message_content,
+        is_window_focused=is_window_focused,
+        message_count=int(count),
+        timestamp=int(timestamp)
+    )
+```
+
+**JavaScript Enhancement** (`src/karere/window.py:522-556`):
+- **Removed Window Focus Requirement**: JavaScript no longer filters based on window focus, delegating this intelligent decision to NotificationManager
+- **Enhanced Data Collection**: Comprehensive metadata collection for smart filtering decisions
+- **Rich Context Passing**: All relevant notification context passed to Python layer
+
+**Technical Architecture**:
+```
+WhatsApp Web DOM Changes → JavaScript Detection → Enhanced Context Collection → 
+WebKit Message Handler → NotificationManager Filtering → Desktop Notification
+```
+
+**Integration Benefits**:
+- **Unified Filtering**: All notifications (JavaScript-detected and system) use same intelligent filtering logic
+- **Window Focus Intelligence**: Proper handling of focused vs unfocused window states
+- **DND Integration**: WhatsApp message notifications respect DND schedules and manual toggles
+- **Message Preview Control**: Automatic message content processing based on privacy settings
+- **Session Awareness**: Background notification frequency management applies to all notification types
+- **Non-Breaking**: Existing notification system enhanced without disrupting current functionality
+
+**Files Modified**:
+- `src/karere/window.py` - Enhanced JavaScript notification detection and message handler integration
+  - Lines 522-556: Enhanced JavaScript context collection and data passing
+  - Lines 1027-1064: Comprehensive message handler with NotificationManager integration
+
+**Key Features Integrated**:
+1. **Smart Window Focus Handling**: JavaScript passes focus state; NotificationManager makes intelligent filtering decisions
+2. **Rich Message Context**: Full message content, sender details, and metadata available for filtering
+3. **Unified Notification Pipeline**: All notification types flow through same intelligent filtering system  
+4. **Enhanced User Experience**: Notifications appear based on sophisticated context-aware rules
+5. **Seamless Fallback**: Graceful degradation if NotificationManager is unavailable
+
+**Testing Integration**:
+- Notifications respect DND schedules when WhatsApp messages arrive
+- Window focus state properly influences notification display decisions
+- Message preview controls apply to WhatsApp notifications
+- Background session management affects WhatsApp notification frequency
+- All existing notification functionality preserved and enhanced
+
+**Performance Optimizations**:
+- Minimal JavaScript overhead for enhanced data collection
+- Efficient message handler processing with comprehensive error handling
+- Non-blocking integration with existing notification pipeline
+
+**Future Enhancement Foundation**:
+- Rich notification context enables advanced features in subsequent phases
+- Comprehensive integration supports notification analytics and user behavior tracking
+- Enhanced metadata supports smart notification grouping and prioritization
+
 ### Implement Proper Error Handling for Production ✅
 **Status**: Completed  
 **Priority**: Critical  

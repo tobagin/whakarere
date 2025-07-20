@@ -519,14 +519,14 @@ class KarereWindow(Adw.ApplicationWindow):
                         latestMessageText = lastMessage.textContent?.substring(0, 100) || '';
                     }
                     
-                    // Trigger notification based on multiple conditions
+                    // Determine if we should attempt notification
                     const now = Date.now();
-                    const shouldNotify = !isWindowFocused && (
+                    const hasNewContent = (
                         (hasNewMessages && totalUnread > lastMessageCount) ||
                         (latestMessageText && latestMessageText !== lastMessageText && latestMessageText.length > 0)
                     ) && (now - lastNotificationTime) > 3000; // Reduced cooldown
                     
-                    if (shouldNotify) {
+                    if (hasNewContent) {
                         // Try to get the sender name
                         let senderName = 'WhatsApp';
                         const senderSelectors = [
@@ -544,15 +544,19 @@ class KarereWindow(Adw.ApplicationWindow):
                             }
                         }
                         
-                        // Send notification
+                        // Send notification with comprehensive context for NotificationManager
                         if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.notification) {
                             window.webkit.messageHandlers.notification.postMessage({
                                 sender: senderName,
                                 message: totalUnread > 0 ? `${totalUnread} new message(s)` : 'New message received',
-                                count: totalUnread || 1
+                                count: totalUnread || 1,
+                                messageContent: latestMessageText?.substring(0, 200) || '',
+                                isWindowFocused: isWindowFocused,
+                                timestamp: now,
+                                messageType: 'message'
                             });
                             lastNotificationTime = now;
-                            console.log('Karere: Notification sent for:', senderName);
+                            console.log('Karere: Notification data sent for:', senderName, 'window focused:', isWindowFocused);
                         }
                     }
                     
@@ -1021,7 +1025,7 @@ class KarereWindow(Adw.ApplicationWindow):
             self.logger.error(f"JavaScript injection failed: {e}")
     
     def _on_notification_message(self, user_content_manager, message):
-        """Handle notification messages from JavaScript."""
+        """Handle notification messages from JavaScript with NotificationManager integration."""
         try:
             # Get the message data
             js_value = message.get_js_value()
@@ -1030,19 +1034,34 @@ class KarereWindow(Adw.ApplicationWindow):
                 msg_text = js_value.object_get_property("message").to_string() if js_value.object_has_property("message") else "New message"
                 count = js_value.object_get_property("count").to_number() if js_value.object_has_property("count") else 1
                 
+                # Get enhanced data for NotificationManager
+                message_content = js_value.object_get_property("messageContent").to_string() if js_value.object_has_property("messageContent") else ""
+                is_window_focused = js_value.object_get_property("isWindowFocused").to_boolean() if js_value.object_has_property("isWindowFocused") else False
+                timestamp = js_value.object_get_property("timestamp").to_number() if js_value.object_has_property("timestamp") else 0
+                message_type = js_value.object_get_property("messageType").to_string() if js_value.object_has_property("messageType") else "message"
                 
-                # Send the notification through the application
+                # Prepare notification details
                 notification_title = f"New message from {sender}" if sender != "WhatsApp" else "WhatsApp"
                 notification_body = f"{msg_text} ({int(count)} unread)" if count > 1 else msg_text
                 
-                self.app.send_notification(notification_title, notification_body)
+                # Send the notification through the application with enhanced context
+                self.app.send_notification(
+                    notification_title, 
+                    notification_body,
+                    notification_type="message",
+                    sender=sender,
+                    message_content=message_content,
+                    is_window_focused=is_window_focused,
+                    message_count=int(count),
+                    timestamp=int(timestamp)
+                )
             else:
                 self.logger.debug("Received non-object notification message")
                 
         except Exception as e:
             self.logger.error(f"Error handling notification message: {e}")
             # Fallback notification
-            self.app.send_notification("WhatsApp", "New message received")
+            self.app.send_notification("WhatsApp", "New message received", notification_type="message")
 
     def setup_download_directory(self):
         """Set up the downloads directory with comprehensive error handling."""
