@@ -65,7 +65,22 @@
   </content_rating>
   
   <releases>
-    <release version="@VERSION@" date="2025-01-20">
+    <release version="@VERSION@" date="2025-07-20">
+      <description>
+        <p>Critical background notification fixes and UI improvements</p>
+        <ul>
+          <li>Fixed background notification frequency logic - 'always' mode now works correctly</li>
+          <li>Reduced background notification cooldown from 5 minutes to 30 seconds for better responsiveness</li>
+          <li>Fixed session tracking logic conflict causing 'always' mode to behave like 'first-time-only'</li>
+          <li>Enhanced crash reporting settings integration with proper attribute mapping</li>
+          <li>Increased preferences dialog width to 800px for improved readability</li>
+          <li>Fixed crash reporting settings loading warnings with correct API usage</li>
+          <li>Comprehensive debug logging for background notification troubleshooting</li>
+          <li>Improved notification system reliability with proper mode-specific behavior</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.4.0" date="2025-07-20">
       <description>
         <p>Advanced notification system and window management enhancements</p>
         <ul>
