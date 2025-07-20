@@ -93,7 +93,10 @@ class NotificationManager:
         
         if notification_type == "background":
             self.background_notification_count += 1
-            self.session_background_shown = True
+            # Only set session_background_shown for "first-session-only" mode
+            frequency = self.settings.get_string("background-notification-frequency")
+            if frequency == "first-session-only":
+                self.session_background_shown = True
             self.last_background_notification_time = current_time
             
         # Limit session notification history to last 100 notifications
@@ -283,16 +286,18 @@ class NotificationManager:
                 return False
         # frequency == "always" - continue to additional checks
         
-        # Enhanced rate limiting for background notifications
+        # Enhanced rate limiting for background notifications (only for 'always' mode)
         current_time = time.time()
         
-        # Check cooldown period (minimum time between background notifications)
-        background_cooldown = 300  # 5 minutes default cooldown
-        if hasattr(self, '_last_background_notification_time'):
-            time_since_last = current_time - self._last_background_notification_time
-            if time_since_last < background_cooldown:
-                self.logger.debug(f"Background notification blocked by cooldown: {time_since_last:.1f}s < {background_cooldown}s")
-                return False
+        # Apply cooldown only for "always" mode to prevent spam
+        if frequency == "always":
+            # Much shorter cooldown for "always" mode - allow every 30 seconds
+            background_cooldown = 30  # 30 seconds cooldown for always mode
+            if hasattr(self, '_last_background_notification_time'):
+                time_since_last = current_time - self._last_background_notification_time
+                if time_since_last < background_cooldown:
+                    self.logger.debug(f"Background notification blocked by cooldown: {time_since_last:.1f}s < {background_cooldown}s")
+                    return False
         
         # Check if window has been in background long enough to warrant notification
         background_grace_period = kwargs.get("background_grace_period", 30)  # 30 seconds grace period
@@ -420,7 +425,10 @@ class NotificationManager:
     def _update_session_state(self, notification_type: str, **kwargs):
         """Update session state after sending notification."""
         if notification_type == "background":
-            self.session_background_shown = True
+            # Only set session_background_shown for "first-session-only" mode
+            frequency = self.settings.get_string("background-notification-frequency")
+            if frequency == "first-session-only":
+                self.session_background_shown = True
             self.last_background_notification_time = datetime.now()
     
     def _on_settings_changed(self, settings, key):
