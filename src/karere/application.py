@@ -15,6 +15,7 @@ from gi.repository import Gtk, Adw, Gio, GLib
 from .logging_config import setup_logging, get_logger, set_log_level, disable_console_logging, enable_console_logging
 from ._build_config import get_default_log_level, should_enable_debug_features
 from .crash_reporter import get_crash_reporter
+from .notification_manager import NotificationManager
 
 # Determine app ID based on environment (for dev/prod distinction)
 def get_app_id():
@@ -191,6 +192,9 @@ class KarereApplication(Adw.Application):
         
         # Set up application actions
         self._setup_actions()
+        
+        # Initialize notification manager
+        self._setup_notification_manager()
     
     def _setup_actions(self):
         """Set up application-level actions."""
@@ -214,6 +218,17 @@ class KarereApplication(Adw.Application):
         # Set up keyboard shortcuts
         self.set_accels_for_action("app.quit", ["<Control>q"])
         self.logger.info("Application actions configured")
+    
+    def _setup_notification_manager(self):
+        """Initialize the notification manager."""
+        try:
+            settings = Gio.Settings.new("io.github.tobagin.karere")
+            self.notification_manager = NotificationManager(self, settings)
+            self.logger.info("NotificationManager initialized successfully")
+        except Exception as e:
+            self.logger.error(f"Failed to initialize NotificationManager: {e}")
+            # Create a fallback minimal notification manager
+            self.notification_manager = None
     
     def _on_show_window_action(self, action, param):
         """Handle show window action from notification."""
@@ -303,11 +318,27 @@ class KarereApplication(Adw.Application):
             # Fallback to console error
             print(f"Error: {title} - {message}", file=sys.stderr)
     
-    def send_notification(self, title, message, icon_name=None):
-        """Send a desktop notification with error recovery."""
+    def send_notification(self, title, message, icon_name=None, notification_type="system", **kwargs):
+        """Send a desktop notification with error recovery and filtering."""
         if not self.notification_enabled:
             self.logger.debug("Notifications disabled, skipping")
             return
+        
+        # Use NotificationManager for filtering if available
+        if hasattr(self, 'notification_manager') and self.notification_manager:
+            try:
+                # Check if notification should be sent
+                if not self.notification_manager.should_show_notification(notification_type, **kwargs):
+                    self.logger.debug(f"Notification filtered by NotificationManager: {title}")
+                    return
+                
+                # Process message content through NotificationManager
+                processed_message = self.notification_manager._process_message_content(message, notification_type, **kwargs)
+                message = processed_message
+                
+            except Exception as e:
+                self.logger.error(f"Error in NotificationManager filtering: {e}")
+                # Continue with original notification if manager fails
             
         try:
             self.logger.info(f"Sending notification: {title} - {message}")
@@ -396,10 +427,11 @@ class KarereApplication(Adw.Application):
         if self.main_window:
             self.main_window.set_visible(False)
         
-        # Send notification to inform user app is running in background
+        # Send background notification through NotificationManager
         self.send_notification(
             "Karere", 
-            "Application is running in the background. Click here to show the window."
+            "Application is running in the background. Click here to show the window.",
+            notification_type="background"
         )
         return True  # Prevent default close behavior
     
@@ -439,13 +471,16 @@ class KarereApplication(Adw.Application):
         # Step 3: Close crash reporter
         self._cleanup_crash_reporter()
         
-        # Step 4: Clean up logging
+        # Step 4: Clean up notification manager
+        self._cleanup_notification_manager()
+        
+        # Step 5: Clean up logging
         self._cleanup_logging()
         
-        # Step 5: Clean up settings
+        # Step 6: Clean up settings
         self._cleanup_settings()
         
-        # Step 6: Clean up temporary files
+        # Step 7: Clean up temporary files
         self._cleanup_temporary_files()
         
         self.logger.info("Graceful shutdown procedures completed")
@@ -524,6 +559,24 @@ class KarereApplication(Adw.Application):
                 
         except Exception as e:
             self.logger.error(f"Failed to clean up crash reporter: {e}")
+    
+    def _cleanup_notification_manager(self):
+        """Clean up notification manager resources."""
+        try:
+            if hasattr(self, 'notification_manager') and self.notification_manager:
+                self.logger.info("Cleaning up notification manager")
+                
+                # Reset session state
+                self.notification_manager.reset_session_state()
+                
+                # Clean up any pending operations
+                if hasattr(self.notification_manager, 'cleanup'):
+                    self.notification_manager.cleanup()
+                
+                self.logger.info("Notification manager cleanup completed")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to clean up notification manager: {e}")
     
     def _cleanup_logging(self):
         """Clean up logging resources."""

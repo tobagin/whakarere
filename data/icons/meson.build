@@ -6,3 +6,9 @@ foreach size : icon_sizes
     install_dir: get_option('datadir') / 'icons' / 'hicolor' / size / 'apps'
   )
 endforeach
+
+# Install symbolic icons
+install_data(
+  'hicolor/symbolic/apps/io.github.tobagin.karere-notification-symbolic.svg',
+  install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'symbolic' / 'apps'
+)
