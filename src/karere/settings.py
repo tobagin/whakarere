@@ -10,7 +10,6 @@ gi.require_version("Adw", "1")
 
 from gi.repository import Gtk, Adw, Gio
 from ._build_config import should_show_developer_settings, should_enable_developer_tools
-from .crash_settings import CrashReportingSettingsDialog
 
 
 @Gtk.Template(resource_path='/io/github/tobagin/karere/settings.ui')
@@ -40,6 +39,13 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
     dnd_start_entry = Gtk.Template.Child()
     dnd_end_entry = Gtk.Template.Child()
     
+    # Crash reporting page template children
+    crash_reporting_enabled_row = Gtk.Template.Child()
+    include_system_info_row = Gtk.Template.Child()
+    include_logs_row = Gtk.Template.Child()
+    view_stats_button = Gtk.Template.Child()
+    clear_reports_button = Gtk.Template.Child()
+    
     def __init__(self, parent_window):
         super().__init__()
         self.parent_window = parent_window
@@ -49,7 +55,7 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
         self._setup_signals()
         self._load_settings()
         self._configure_production_hardening()
-        self._add_crash_reporting_settings()
+        self._load_crash_reporting_settings()
     
     def _setup_signals(self):
         """Set up signal connections."""
@@ -72,6 +78,13 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
         self.dnd_schedule_row.connect("notify::active", self._on_dnd_schedule_changed)
         self.dnd_start_entry.connect("notify::text", self._on_dnd_start_time_changed)
         self.dnd_end_entry.connect("notify::text", self._on_dnd_end_time_changed)
+        
+        # Crash reporting signals
+        self.crash_reporting_enabled_row.connect("notify::active", self._on_crash_reporting_enabled_changed)
+        self.include_system_info_row.connect("notify::active", self._on_include_system_info_changed)
+        self.include_logs_row.connect("notify::active", self._on_include_logs_changed)
+        self.view_stats_button.connect("clicked", self._on_view_stats_clicked)
+        self.clear_reports_button.connect("clicked", self._on_clear_reports_clicked)
     
     def _load_settings(self):
         """Load current settings from GSettings."""
@@ -155,46 +168,29 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
             # Make the row insensitive if it's still visible
             self.developer_tools_row.set_sensitive(False)
     
-    def _add_crash_reporting_settings(self):
-        """Add crash reporting settings to the dialog."""
+    def _load_crash_reporting_settings(self):
+        """Load crash reporting settings from crash reporter."""
         try:
-            # Add crash reporting settings to the privacy group
-            if hasattr(self, 'privacy_group') and self.privacy_group:
-                self._add_crash_reporting_to_privacy_group()
+            from .crash_reporter import get_crash_reporter
+            crash_reporter = get_crash_reporter()
+            
+            if crash_reporter:
+                # Load current crash reporting settings
+                self.crash_reporting_enabled_row.set_active(crash_reporter.enabled)
+                self.include_system_info_row.set_active(crash_reporter.include_system_info)
+                self.include_logs_row.set_active(crash_reporter.include_logs)
             else:
-                self.logger.warning("Privacy group not found, skipping crash reporting settings")
+                # Default values if crash reporter not available
+                self.crash_reporting_enabled_row.set_active(True)
+                self.include_system_info_row.set_active(True)
+                self.include_logs_row.set_active(False)
+                
         except Exception as e:
-            self.logger.warning(f"Failed to add crash reporting settings: {e}")
-    
-    def _add_crash_reporting_to_privacy_group(self):
-        """Add crash reporting settings to the privacy group."""
-        try:
-            # Create crash reporting settings row
-            crash_settings_row = Adw.ActionRow()
-            crash_settings_row.set_title("Crash Reporting Settings")
-            crash_settings_row.set_subtitle("Configure crash report collection and management")
-            
-            # Create settings button
-            crash_settings_button = Gtk.Button()
-            crash_settings_button.set_label("Configure")
-            crash_settings_button.set_valign(Gtk.Align.CENTER)
-            crash_settings_button.connect("clicked", self._on_crash_settings_clicked)
-            
-            crash_settings_row.add_suffix(crash_settings_button)
-            
-            # Add the row to the privacy group
-            self.privacy_group.add(crash_settings_row)
-            
-        except Exception as e:
-            self.logger.warning(f"Failed to add crash reporting settings to privacy group: {e}")
-    
-    def _on_crash_settings_clicked(self, button):
-        """Handle crash settings button click."""
-        try:
-            crash_settings_dialog = CrashReportingSettingsDialog(self.parent_window)
-            crash_settings_dialog.present()
-        except Exception as e:
-            print(f"Error opening crash settings dialog: {e}")
+            self.logger.warning(f"Failed to load crash reporting settings: {e}")
+            # Set default values on error
+            self.crash_reporting_enabled_row.set_active(True)
+            self.include_system_info_row.set_active(True)
+            self.include_logs_row.set_active(False)
     
     # Notification settings signal handlers
     def _on_message_notifications_changed(self, row, param):
@@ -318,3 +314,85 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
         # Show preview length only if both message notifications and preview are enabled
         show_preview_length = message_notifications_enabled and message_preview_enabled
         self.message_preview_length_row.set_visible(show_preview_length)
+    
+    # Crash reporting signal handlers
+    def _on_crash_reporting_enabled_changed(self, row, param):
+        """Handle crash reporting enabled toggle."""
+        try:
+            from .crash_reporter import get_crash_reporter
+            crash_reporter = get_crash_reporter()
+            if crash_reporter:
+                crash_reporter.enabled = row.get_active()
+                self.logger.info(f"Crash reporting {'enabled' if row.get_active() else 'disabled'}")
+        except Exception as e:
+            self.logger.error(f"Error updating crash reporting enabled: {e}")
+    
+    def _on_include_system_info_changed(self, row, param):
+        """Handle include system info toggle."""
+        try:
+            from .crash_reporter import get_crash_reporter
+            crash_reporter = get_crash_reporter()
+            if crash_reporter:
+                crash_reporter.include_system_info = row.get_active()
+                self.logger.info(f"Include system info {'enabled' if row.get_active() else 'disabled'}")
+        except Exception as e:
+            self.logger.error(f"Error updating include system info: {e}")
+    
+    def _on_include_logs_changed(self, row, param):
+        """Handle include logs toggle."""
+        try:
+            from .crash_reporter import get_crash_reporter
+            crash_reporter = get_crash_reporter()
+            if crash_reporter:
+                crash_reporter.include_logs = row.get_active()
+                self.logger.info(f"Include logs {'enabled' if row.get_active() else 'disabled'}")
+        except Exception as e:
+            self.logger.error(f"Error updating include logs: {e}")
+    
+    def _on_view_stats_clicked(self, button):
+        """Handle view statistics button click."""
+        try:
+            from .crash_reporter import get_crash_reporter
+            crash_reporter = get_crash_reporter()
+            if crash_reporter:
+                stats = crash_reporter.get_crash_statistics()
+                # Create a simple info dialog with statistics
+                dialog = Adw.MessageDialog.new(self.parent_window)
+                dialog.set_heading("Crash Report Statistics")
+                dialog.set_body(f"Total crashes: {stats.get('total_crashes', 0)}\n"
+                               f"Reports stored: {stats.get('reports_stored', 0)}\n"
+                               f"Last crash: {stats.get('last_crash', 'None')}")
+                dialog.add_response("ok", "OK")
+                dialog.present()
+        except Exception as e:
+            self.logger.error(f"Error viewing crash statistics: {e}")
+    
+    def _on_clear_reports_clicked(self, button):
+        """Handle clear reports button click."""
+        try:
+            from .crash_reporter import get_crash_reporter
+            crash_reporter = get_crash_reporter()
+            if crash_reporter:
+                # Show confirmation dialog
+                dialog = Adw.MessageDialog.new(self.parent_window)
+                dialog.set_heading("Clear Crash Reports")
+                dialog.set_body("Are you sure you want to delete all stored crash reports? This action cannot be undone.")
+                dialog.add_response("cancel", "Cancel")
+                dialog.add_response("delete", "Delete All")
+                dialog.set_response_appearance("delete", Adw.ResponseAppearance.DESTRUCTIVE)
+                dialog.connect("response", self._on_clear_reports_response)
+                dialog.present()
+        except Exception as e:
+            self.logger.error(f"Error clearing crash reports: {e}")
+    
+    def _on_clear_reports_response(self, dialog, response):
+        """Handle clear reports confirmation response."""
+        if response == "delete":
+            try:
+                from .crash_reporter import get_crash_reporter
+                crash_reporter = get_crash_reporter()
+                if crash_reporter:
+                    crash_reporter.clear_all_reports()
+                    self.logger.info("All crash reports cleared")
+            except Exception as e:
+                self.logger.error(f"Error clearing crash reports: {e}")

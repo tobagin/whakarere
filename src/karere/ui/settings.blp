@@ -146,4 +146,60 @@ template $KarereSettingsDialog : Adw.PreferencesDialog {
 
     }
   }
+
+  Adw.PreferencesPage crash_reporting_page {
+    title: _("Crash Reporting");
+    icon-name: "dialog-warning-symbolic";
+
+    Adw.PreferencesGroup crash_settings_group {
+      title: _("Crash Reporting");
+      description: _("Configure crash report collection and management");
+
+      Adw.SwitchRow crash_reporting_enabled_row {
+        title: _("Enable Crash Reporting");
+        subtitle: _("Automatically collect crash reports to help improve the application");
+        active: true;
+      }
+
+      Adw.SwitchRow include_system_info_row {
+        title: _("Include System Information");
+        subtitle: _("Include system details (OS, hardware) in crash reports");
+        active: true;
+      }
+
+      Adw.SwitchRow include_logs_row {
+        title: _("Include Application Logs");
+        subtitle: _("Include recent application logs in crash reports");
+        active: false;
+      }
+    }
+
+    Adw.PreferencesGroup crash_management_group {
+      title: _("Crash Report Management");
+
+      Adw.ActionRow crash_statistics_row {
+        title: _("Crash Statistics");
+        subtitle: _("View crash report statistics and manage stored reports");
+
+        Gtk.Button view_stats_button {
+          label: _("View Statistics");
+          valign: center;
+          
+          styles ["flat"]
+        }
+      }
+
+      Adw.ActionRow clear_reports_row {
+        title: _("Clear Crash Reports");
+        subtitle: _("Remove all stored crash reports from the system");
+
+        Gtk.Button clear_reports_button {
+          label: _("Clear All");
+          valign: center;
+          
+          styles ["flat", "destructive-action"]
+        }
+      }
+    }
+  }
 }
