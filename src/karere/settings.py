@@ -23,6 +23,7 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
     theme_row = Gtk.Template.Child()
     persistent_cookies_row = Gtk.Template.Child()
     developer_tools_row = Gtk.Template.Child()
+    webview_group = Gtk.Template.Child()
     privacy_group = Gtk.Template.Child()
     
     # Notifications page template children
@@ -144,6 +145,8 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
         # Hide developer tools in production builds
         if not should_show_developer_settings():
             self.developer_tools_row.set_visible(False)
+            # Hide the entire WebView group if all its contents are hidden
+            self.webview_group.set_visible(False)
             
         # Disable developer tools functionality in production
         if not should_enable_developer_tools():
