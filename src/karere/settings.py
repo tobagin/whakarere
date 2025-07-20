@@ -176,9 +176,9 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
             
             if crash_reporter:
                 # Load current crash reporting settings
-                self.crash_reporting_enabled_row.set_active(crash_reporter.enabled)
-                self.include_system_info_row.set_active(crash_reporter.include_system_info)
-                self.include_logs_row.set_active(crash_reporter.include_logs)
+                self.crash_reporting_enabled_row.set_active(crash_reporter.enable_reporting)
+                self.include_system_info_row.set_active(crash_reporter.collect_system_info)
+                self.include_logs_row.set_active(getattr(crash_reporter, 'collect_logs', False))
             else:
                 # Default values if crash reporter not available
                 self.crash_reporting_enabled_row.set_active(True)
@@ -322,7 +322,7 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
             from .crash_reporter import get_crash_reporter
             crash_reporter = get_crash_reporter()
             if crash_reporter:
-                crash_reporter.enabled = row.get_active()
+                crash_reporter.enable_reporting = row.get_active()
                 self.logger.info(f"Crash reporting {'enabled' if row.get_active() else 'disabled'}")
         except Exception as e:
             self.logger.error(f"Error updating crash reporting enabled: {e}")
@@ -333,7 +333,7 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
             from .crash_reporter import get_crash_reporter
             crash_reporter = get_crash_reporter()
             if crash_reporter:
-                crash_reporter.include_system_info = row.get_active()
+                crash_reporter.collect_system_info = row.get_active()
                 self.logger.info(f"Include system info {'enabled' if row.get_active() else 'disabled'}")
         except Exception as e:
             self.logger.error(f"Error updating include system info: {e}")
@@ -344,7 +344,8 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
             from .crash_reporter import get_crash_reporter
             crash_reporter = get_crash_reporter()
             if crash_reporter:
-                crash_reporter.include_logs = row.get_active()
+                # Use setattr since collect_logs might not exist
+                setattr(crash_reporter, 'collect_logs', row.get_active())
                 self.logger.info(f"Include logs {'enabled' if row.get_active() else 'disabled'}")
         except Exception as e:
             self.logger.error(f"Error updating include logs: {e}")
@@ -355,13 +356,15 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
             from .crash_reporter import get_crash_reporter
             crash_reporter = get_crash_reporter()
             if crash_reporter:
-                stats = crash_reporter.get_crash_statistics()
+                reports = crash_reporter.get_crash_reports()
+                total_reports = len(reports)
+                last_crash = reports[-1]['timestamp'] if reports else 'None'
+                
                 # Create a simple info dialog with statistics
                 dialog = Adw.MessageDialog.new(self.parent_window)
                 dialog.set_heading("Crash Report Statistics")
-                dialog.set_body(f"Total crashes: {stats.get('total_crashes', 0)}\n"
-                               f"Reports stored: {stats.get('reports_stored', 0)}\n"
-                               f"Last crash: {stats.get('last_crash', 'None')}")
+                dialog.set_body(f"Reports stored: {total_reports}\n"
+                               f"Last crash: {last_crash}")
                 dialog.add_response("ok", "OK")
                 dialog.present()
         except Exception as e:
@@ -392,7 +395,7 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
                 from .crash_reporter import get_crash_reporter
                 crash_reporter = get_crash_reporter()
                 if crash_reporter:
-                    crash_reporter.clear_all_reports()
+                    crash_reporter.clear_crash_reports()
                     self.logger.info("All crash reports cleared")
             except Exception as e:
                 self.logger.error(f"Error clearing crash reports: {e}")
