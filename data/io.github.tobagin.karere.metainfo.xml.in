@@ -82,6 +82,19 @@
   <releases>
     <release version="@VERSION@" date="2025-07-21">
       <description>
+        <p>Notification system debugging and improvements</p>
+        <ul>
+          <li>Fixed notification system for development builds with proper icon resolution</li>
+          <li>Added comprehensive notification debugging and error logging</li>
+          <li>Enhanced notification reliability with fallback mechanisms</li>
+          <li>Improved desktop integration for development and testing workflows</li>
+          <li>Fixed duplicate load-changed signal connections causing repeated events</li>
+          <li>Removed leftover JavaScript injection code for cleaner implementation</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.5.0" date="2025-07-21">
+      <description>
         <p>Version bump for major architectural changes</p>
         <ul>
           <li>Bumped version to 0.5.0 to reflect the significant WebKit notification system improvements</li>
