@@ -68,14 +68,28 @@ Karere is a native GTK4 application that provides a seamless WhatsApp Web experi
       <em>Main Application Window</em>
     </td>
     <td align="center">
-      <img src="screenshots/settings-dialog.png" alt="Settings" width="300"><br>
-      <em>Settings Dialog</em>
+      <img src="screenshots/about.png" alt="About Dialog" width="300"><br>
+      <em>About Dialog</em>
     </td>
   </tr>
   <tr>
-    <td align="center" colspan="2">
-      <img src="screenshots/about-dialog.png" alt="About Dialog" width="300"><br>
-      <em>About Dialog</em>
+    <td align="center">
+      <img src="screenshots/preferences-general.png" alt="General Preferences" width="300"><br>
+      <em>General Preferences</em>
+    </td>
+    <td align="center">
+      <img src="screenshots/preferences-notifications.png" alt="Notification Settings" width="300"><br>
+      <em>Notification Settings</em>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="screenshots/preferences-spell-checking.png" alt="Spell Checking" width="300"><br>
+      <em>Spell Checking Settings</em>
+    </td>
+    <td align="center">
+      <img src="screenshots/preferences-crash-reporting.png" alt="Crash Reporting" width="300"><br>
+      <em>Crash Reporting Settings</em>
     </td>
   </tr>
 </table>

@@ -50,12 +50,27 @@
   <screenshots>
     <screenshot type="default">
       <image>https://github.com/tobagin/karere/blob/main/screenshots/main-window.png?raw=true</image>
+      <caption>Main application window with WhatsApp Web integration</caption>
     </screenshot>
     <screenshot>
-      <image>https://github.com/tobagin/karere/blob/main/screenshots/about-dialog.png?raw=true</image>
+      <image>https://github.com/tobagin/karere/blob/main/screenshots/about.png?raw=true</image>
+      <caption>About dialog showing application information</caption>
     </screenshot>
     <screenshot>
-      <image>https://github.com/tobagin/karere/blob/main/screenshots/settings-dialog.png?raw=true</image>
+      <image>https://github.com/tobagin/karere/blob/main/screenshots/preferences-general.png?raw=true</image>
+      <caption>General preferences and theme settings</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/tobagin/karere/blob/main/screenshots/preferences-notifications.png?raw=true</image>
+      <caption>Notification preferences and background settings</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/tobagin/karere/blob/main/screenshots/preferences-spell-checking.png?raw=true</image>
+      <caption>Spell checking configuration options</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://github.com/tobagin/karere/blob/main/screenshots/preferences-crash-reporting.png?raw=true</image>
+      <caption>Crash reporting and privacy settings</caption>
     </screenshot>
   </screenshots>
   
@@ -66,6 +81,19 @@
   
   <releases>
     <release version="@VERSION@" date="2025-07-21">
+      <description>
+        <p>Updated screenshots and visual documentation</p>
+        <ul>
+          <li>Added comprehensive screenshot gallery showcasing all application features</li>
+          <li>Updated screenshots to show current application design and interface</li>
+          <li>Added detailed preference screens for general settings, notifications, spell checking, and crash reporting</li>
+          <li>Enhanced AppStream metadata with descriptive captions for better software center presentation</li>
+          <li>Improved visual documentation to help users understand application capabilities</li>
+          <li>Better representation of the modern GTK4/Libadwaita interface</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.4.5" date="2025-07-21">
       <description>
         <p>Bug fixes and stability improvements</p>
         <ul>
