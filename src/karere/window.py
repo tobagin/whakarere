@@ -143,6 +143,10 @@ class KarereWindow(Adw.ApplicationWindow):
             webkit_settings.set_enable_webgl(True)
             webkit_settings.set_hardware_acceleration_policy(WebKit.HardwareAccelerationPolicy.ALWAYS)
             
+            # Enable clipboard access for screenshot paste functionality
+            webkit_settings.set_javascript_can_access_clipboard(True)
+            self.logger.info("Clipboard access enabled for screenshot paste")
+            
             # Set user agent to avoid mobile version and show custom app name
             from .application import BUS_NAME
             app_name = "Karere.dev" if BUS_NAME.endswith('.dev') else "Karere"

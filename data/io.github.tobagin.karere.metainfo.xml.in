@@ -4,7 +4,7 @@
   
   <!-- Flatpak ID transition support -->
   <provides>
-    <id>io.github.tobagin.karere</id>
+    <id>com.mudeprolinux.whakarere</id>
   </provides>
   <replaces>
     <id>com.mudeprolinux.whakarere</id>
