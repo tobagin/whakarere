@@ -351,17 +351,40 @@ class KarereApplication(Adw.Application):
             
             # Use dynamic app ID for icon if not specified
             if icon_name is None:
-                icon_name = BUS_NAME
+                # For dev builds, use the production icon since that's what's installed
+                if BUS_NAME.endswith('.dev'):
+                    icon_name = "io.github.tobagin.karere"
+                else:
+                    icon_name = BUS_NAME
             
             # Add action to show window when notification is clicked
             notification.add_button("Show", "app.show-window")
             
             # Use simple ID for portal compatibility
             notification_id = f"msg-{int(GLib.get_monotonic_time())}"
+            
+            # Add debugging information
+            self.logger.info(f"Attempting to send notification with ID: {notification_id}")
+            self.logger.info(f"Notification title: '{title}', body: '{message}'")
+            self.logger.info(f"Icon name: {icon_name}")
+            self.logger.info(f"Application ID: {self.get_application_id()}")
+            
             super().send_notification(notification_id, notification)
+            self.logger.info("Notification sent successfully via Gio.Application.send_notification")
             
         except Exception as e:
             self.logger.error(f"Failed to send notification: {e}")
+            self.logger.error(f"Notification title was: '{title}', body was: '{message}'")
+            
+            # For dev builds, try alternative notification method as fallback
+            if BUS_NAME.endswith('.dev'):
+                self.logger.info("Attempting fallback notification method for dev build")
+                try:
+                    if hasattr(self, 'notification_manager') and self.notification_manager:
+                        self.notification_manager._send_system_notification(title, message)
+                        self.logger.info("Fallback notification sent via NotificationManager")
+                except Exception as e2:
+                    self.logger.error(f"Fallback notification also failed: {e2}")
             # Don't show error dialog for notification failures (too disruptive)
             # Just log the error and continue
     
