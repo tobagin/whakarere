@@ -424,8 +424,62 @@ class KarereWindow(Adw.ApplicationWindow):
                 }
             }
             
+            function isEmojiPickerOpen() {
+                // Check for emoji picker/selector dialogs
+                const emojiSelectors = [
+                    '[data-emoji-picker]',
+                    '[class*="emoji-picker"]',
+                    '[class*="emoji-selector"]',
+                    '[role="dialog"][aria-label*="emoji" i]',
+                    '[role="dialog"][aria-label*="sticker" i]',
+                    'div[style*="z-index"][style*="position: absolute"]:has([data-emoji])',
+                    'div[data-animate-modal-popup="true"]' // WhatsApp's modal animation container
+                ];
+                
+                return emojiSelectors.some(selector => {
+                    try {
+                        return document.querySelector(selector) !== null;
+                    } catch (e) {
+                        return false; // Ignore invalid selectors
+                    }
+                });
+            }
+            
+            function isModalDialogOpen() {
+                // Check for any modal dialogs that might interfere
+                const modalSelectors = [
+                    '[role="dialog"]',
+                    '[aria-modal="true"]',
+                    '.modal-open',
+                    '[class*="modal"][class*="open"]',
+                    'div[style*="position: fixed"][style*="z-index"]'
+                ];
+                
+                return modalSelectors.some(selector => {
+                    try {
+                        const elements = document.querySelectorAll(selector);
+                        // Check if modal is actually visible (not just present in DOM)
+                        return Array.from(elements).some(el => {
+                            const style = window.getComputedStyle(el);
+                            return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+                        });
+                    } catch (e) {
+                        return false;
+                    }
+                });
+            }
+            
             function checkForNewMessages() {
                 try {
+                    // Skip detection if emoji picker or other modal dialogs are open
+                    if (isEmojiPickerOpen() || isModalDialogOpen()) {
+                        return; // Don't interfere with UI dialogs
+                    }
+                    
+                    // Performance safeguard - limit execution time
+                    const startTime = performance.now();
+                    const maxExecutionTime = 100; // 100ms max
+                    
                     let totalUnread = 0;
                     let hasNewMessages = false;
                     let foundElements = [];
@@ -506,17 +560,20 @@ class KarereWindow(Adw.ApplicationWindow):
                     // Run all detection methods and take the highest count (not sum)
                     let detectionResults = [];
                     for (let i = 0; i < detectionMethods.length; i++) {
+                        // Check if we're taking too long
+                        if (performance.now() - startTime > maxExecutionTime) {
+                            console.warn('Karere: Detection taking too long, stopping early');
+                            break;
+                        }
+                        
                         const methodCount = detectionMethods[i]();
                         detectionResults.push(methodCount);
-                        console.log(`Karere: Detection method ${i+1} found: ${methodCount} unread`);
                         if (methodCount > 0) hasNewMessages = true;
                     }
                     
                     // Use the highest count from valid methods, but avoid obviously wrong counts
                     const validCounts = detectionResults.filter(count => count >= 0 && count < 999);
                     totalUnread = validCounts.length > 0 ? Math.max(...validCounts) : 0;
-                    
-                    console.log(`Karere: Detection results: [${detectionResults.join(', ')}], final count: ${totalUnread}`);
                     
                     // Log detection results when there are changes
                     if (totalUnread !== lastMessageCount) {
@@ -583,14 +640,38 @@ class KarereWindow(Adw.ApplicationWindow):
             // DOM inspection after 5 seconds (for debugging)
             setTimeout(inspectDOM, 5000);
             
-            // Check every 2 seconds for new messages
-            setInterval(checkForNewMessages, 2000);
+            // Check every 3 seconds for new messages (reduced frequency to prevent interference)
+            setInterval(checkForNewMessages, 3000);
             
             // Also listen for DOM changes with throttling
             let timeoutId;
             const observer = new MutationObserver((mutations) => {
+                // Skip if emoji picker or modal is open
+                if (isEmojiPickerOpen() || isModalDialogOpen()) {
+                    return;
+                }
+                
                 // Check if any relevant changes occurred
                 const relevantMutation = mutations.some(mutation => {
+                    // Ignore emoji-related mutations
+                    if (mutation.target) {
+                        const target = mutation.target;
+                        if (target.nodeType === Node.ELEMENT_NODE) {
+                            const className = target.className || '';
+                            const id = target.id || '';
+                            // Skip emoji picker, modal, or animation-related changes
+                            if (className.includes('emoji') || 
+                                className.includes('modal') || 
+                                className.includes('animate') ||
+                                className.includes('picker') ||
+                                id.includes('emoji') ||
+                                target.hasAttribute('data-emoji') ||
+                                target.hasAttribute('data-animate-modal-popup')) {
+                                return false;
+                            }
+                        }
+                    }
+                    
                     return mutation.type === 'childList' || 
                            (mutation.type === 'attributes' && 
                             ['aria-label', 'data-icon', 'data-testid', 'title'].includes(mutation.attributeName));
@@ -598,7 +679,7 @@ class KarereWindow(Adw.ApplicationWindow):
                 
                 if (relevantMutation) {
                     clearTimeout(timeoutId);
-                    timeoutId = setTimeout(checkForNewMessages, 500);
+                    timeoutId = setTimeout(checkForNewMessages, 1000); // Increased delay to reduce interference
                 }
             });
             
