@@ -67,6 +67,21 @@
   <releases>
     <release version="@VERSION@" date="2025-07-21">
       <description>
+        <p>Background notification session tracking improvements</p>
+        <ul>
+          <li>Fixed "first-time-only" mode to work correctly on application startup</li>
+          <li>Resolved duplicate notifications when switching between notification modes</li>
+          <li>Enhanced session tracking to persist across mode changes within the same session</li>
+          <li>Always track background notifications shown regardless of current mode setting</li>
+          <li>Improved user experience for notification frequency preferences</li>
+          <li>Fixed background notification behavior consistency across all modes</li>
+          <li>Enhanced session state management for reliable notification control</li>
+          <li>Optimized notification tracking logic for better reliability</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.4.3" date="2025-07-21">
+      <description>
         <p>Enhanced validation and reliability improvements for notification detection</p>
         <ul>
           <li>Added aggressive validation for message count detection to eliminate false positives</li>
