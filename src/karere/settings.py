@@ -39,6 +39,12 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
     dnd_start_entry = Gtk.Template.Child()
     dnd_end_entry = Gtk.Template.Child()
     
+    # Spell checking page template children
+    spell_checking_enabled_row = Gtk.Template.Child()
+    spell_check_auto_detect_row = Gtk.Template.Child()
+    current_languages_label = Gtk.Template.Child()
+    add_language_button = Gtk.Template.Child()
+    
     # Crash reporting page template children
     crash_reporting_enabled_row = Gtk.Template.Child()
     include_system_info_row = Gtk.Template.Child()
@@ -55,6 +61,7 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
         self._setup_signals()
         self._load_settings()
         self._configure_production_hardening()
+        self._load_spell_checking_settings()
         self._load_crash_reporting_settings()
     
     def _setup_signals(self):
@@ -78,6 +85,11 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
         self.dnd_schedule_row.connect("notify::active", self._on_dnd_schedule_changed)
         self.dnd_start_entry.connect("notify::text", self._on_dnd_start_time_changed)
         self.dnd_end_entry.connect("notify::text", self._on_dnd_end_time_changed)
+        
+        # Spell checking signals
+        self.spell_checking_enabled_row.connect("notify::active", self._on_spell_checking_enabled_changed)
+        self.spell_check_auto_detect_row.connect("notify::active", self._on_spell_check_auto_detect_changed)
+        self.add_language_button.connect("clicked", self._on_add_language_clicked)
         
         # Crash reporting signals
         self.crash_reporting_enabled_row.connect("notify::active", self._on_crash_reporting_enabled_changed)
@@ -167,6 +179,52 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
             self.settings.set_boolean("developer-tools", False)
             # Make the row insensitive if it's still visible
             self.developer_tools_row.set_sensitive(False)
+    
+    def _load_spell_checking_settings(self):
+        """Load spell checking settings from GSettings."""
+        # Load enabled state
+        spell_checking_enabled = self.settings.get_boolean("spell-checking-enabled")
+        self.spell_checking_enabled_row.set_active(spell_checking_enabled)
+        
+        # Load auto-detect state
+        auto_detect = self.settings.get_boolean("spell-checking-auto-detect")
+        self.spell_check_auto_detect_row.set_active(auto_detect)
+        
+        # Update current languages display
+        self._update_current_languages_display()
+    
+    def _update_current_languages_display(self):
+        """Update the display of current spell checking languages."""
+        try:
+            import locale
+            import os
+            
+            if self.settings.get_boolean("spell-checking-auto-detect"):
+                # Get system locale
+                try:
+                    # Get the current locale
+                    current_locale = locale.getlocale()[0]
+                    if current_locale:
+                        # Convert to spell checking format (e.g., en_US)
+                        self.current_languages_label.set_text(f"Auto: {current_locale}")
+                    else:
+                        # Fallback to environment variables
+                        lang = os.environ.get('LANG', 'en_US.UTF-8')
+                        lang_code = lang.split('.')[0]  # Extract just the language part
+                        self.current_languages_label.set_text(f"Auto: {lang_code}")
+                except Exception as e:
+                    self.logger.warning(f"Failed to get system locale: {e}")
+                    self.current_languages_label.set_text("Auto: en_US")
+            else:
+                # Show custom languages
+                languages = self.settings.get_strv("spell-checking-languages")
+                if languages:
+                    self.current_languages_label.set_text(", ".join(languages))
+                else:
+                    self.current_languages_label.set_text("None set")
+        except Exception as e:
+            self.logger.error(f"Error updating languages display: {e}")
+            self.current_languages_label.set_text("Error")
     
     def _load_crash_reporting_settings(self):
         """Load crash reporting settings from crash reporter."""
@@ -314,6 +372,43 @@ class KarereSettingsDialog(Adw.PreferencesDialog):
         # Show preview length only if both message notifications and preview are enabled
         show_preview_length = message_notifications_enabled and message_preview_enabled
         self.message_preview_length_row.set_visible(show_preview_length)
+    
+    # Spell checking signal handlers
+    def _on_spell_checking_enabled_changed(self, row, param):
+        """Handle spell checking enabled toggle."""
+        enabled = row.get_active()
+        self.settings.set_boolean("spell-checking-enabled", enabled)
+        self.logger.info(f"Spell checking {'enabled' if enabled else 'disabled'}")
+        
+        # Notify window to update WebView spell checking
+        if hasattr(self.parent_window, '_update_spell_checking'):
+            self.parent_window._update_spell_checking()
+    
+    def _on_spell_check_auto_detect_changed(self, row, param):
+        """Handle spell check auto-detect toggle."""
+        auto_detect = row.get_active()
+        self.settings.set_boolean("spell-checking-auto-detect", auto_detect)
+        self.logger.info(f"Spell check auto-detect {'enabled' if auto_detect else 'disabled'}")
+        
+        # Update the languages display
+        self._update_current_languages_display()
+        
+        # Notify window to update WebView spell checking
+        if hasattr(self.parent_window, '_update_spell_checking'):
+            self.parent_window._update_spell_checking()
+    
+    def _on_add_language_clicked(self, button):
+        """Handle add language button click."""
+        # For now, show a simple message dialog explaining the feature
+        # This could be enhanced later with a proper language selection dialog
+        dialog = Adw.MessageDialog.new(self.parent_window)
+        dialog.set_heading("Add Spell Check Language")
+        dialog.set_body("Custom language selection is not yet implemented.\n\n"
+                       "To add languages, disable auto-detect and manually edit the "
+                       "spell-checking-languages setting using dconf-editor or gsettings.\n\n"
+                       "Example language codes: en_US, es_ES, fr_FR, de_DE")
+        dialog.add_response("ok", "OK")
+        dialog.present()
     
     # Crash reporting signal handlers
     def _on_crash_reporting_enabled_changed(self, row, param):

@@ -147,6 +147,62 @@ template $KarereSettingsDialog : Adw.PreferencesDialog {
     }
   }
 
+  Adw.PreferencesPage spell_checking_page {
+    title: _("Spell Checking");
+    icon-name: "tools-check-spelling-symbolic";
+
+    Adw.PreferencesGroup spell_check_general_group {
+      title: _("Spell Checking");
+      description: _("Configure spell checking for text inputs");
+
+      Adw.SwitchRow spell_checking_enabled_row {
+        title: _("Enable Spell Checking");
+        subtitle: _("Check spelling in text inputs and highlight errors");
+        active: true;
+      }
+
+      Adw.SwitchRow spell_check_auto_detect_row {
+        title: _("Auto-detect Languages");
+        subtitle: _("Automatically use system locale for spell checking languages");
+        active: true;
+      }
+    }
+
+    Adw.PreferencesGroup spell_check_languages_group {
+      title: _("Languages");
+      description: _("Configure which languages to use for spell checking");
+
+      Adw.ExpanderRow spell_languages_expander {
+        title: _("Spell Check Languages");
+        subtitle: _("Select languages for spell checking");
+
+        Adw.ActionRow current_languages_row {
+          title: _("Current Languages");
+          subtitle: _("Auto-detected from system");
+
+          Gtk.Label current_languages_label {
+            label: _("Auto-detected");
+            valign: center;
+            
+            styles ["dim-label"]
+          }
+        }
+
+        Adw.ActionRow add_language_row {
+          title: _("Add Language");
+          subtitle: _("Add a custom language for spell checking");
+
+          Gtk.Button add_language_button {
+            label: _("Add Language");
+            valign: center;
+            
+            styles ["flat"]
+          }
+        }
+      }
+    }
+  }
+
   Adw.PreferencesPage crash_reporting_page {
     title: _("Crash Reporting");
     icon-name: "dialog-warning-symbolic";

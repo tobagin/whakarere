@@ -151,5 +151,22 @@
       <summary>Show system notifications</summary>
       <description>Show notifications for downloads, errors, and system events</description>
     </key>
+
+    <!-- Spell Checking -->
+    <key name="spell-checking-enabled" type="b">
+      <default>true</default>
+      <summary>Enable spell checking</summary>
+      <description>Whether to enable spell checking in text inputs</description>
+    </key>
+    <key name="spell-checking-languages" type="as">
+      <default>[]</default>
+      <summary>Spell checking languages</summary>
+      <description>List of language codes to use for spell checking (e.g., en_US, es_ES). Empty array means auto-detect from system locale.</description>
+    </key>
+    <key name="spell-checking-auto-detect" type="b">
+      <default>true</default>
+      <summary>Auto-detect spell check languages</summary>
+      <description>Automatically detect spell checking languages from system locale</description>
+    </key>
   </schema>
 </schemalist>

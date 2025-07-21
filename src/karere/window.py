@@ -155,6 +155,9 @@ class KarereWindow(Adw.ApplicationWindow):
             self.logger.error(f"Failed to configure WebView settings: {e}")
             self.logger.warning("Continuing with default WebView settings")
         
+        # Configure spell checking
+        self._setup_spell_checking()
+        
         # Set up script message handler for notifications with error handling
         try:
             user_content_manager = self.webview.get_user_content_manager()
@@ -373,6 +376,88 @@ class KarereWindow(Adw.ApplicationWindow):
             style_manager.set_color_scheme(Adw.ColorScheme.FORCE_DARK)
         else:  # follow-system
             style_manager.set_color_scheme(Adw.ColorScheme.DEFAULT)
+    
+    def _setup_spell_checking(self):
+        """Set up spell checking for the WebView."""
+        try:
+            if hasattr(self, 'webview') and self.webview:
+                # Get the WebContext from the WebView
+                web_context = self.webview.get_web_context()
+                if web_context:
+                    self._configure_spell_checking(web_context)
+                else:
+                    self.logger.warning("No WebContext available for spell checking setup")
+            else:
+                self.logger.warning("No WebView available for spell checking setup")
+        except Exception as e:
+            self.logger.error(f"Failed to set up spell checking: {e}")
+    
+    def _configure_spell_checking(self, web_context):
+        """Configure spell checking settings on the WebContext."""
+        try:
+            # Check if spell checking is enabled
+            spell_checking_enabled = self.settings.get_boolean("spell-checking-enabled")
+            
+            # Enable or disable spell checking
+            web_context.set_spell_checking_enabled(spell_checking_enabled)
+            self.logger.info(f"WebKit spell checking {'enabled' if spell_checking_enabled else 'disabled'}")
+            
+            if spell_checking_enabled:
+                # Configure spell checking languages
+                languages = self._get_spell_checking_languages()
+                if languages:
+                    web_context.set_spell_checking_languages(languages)
+                    self.logger.info(f"Spell checking languages set to: {', '.join(languages)}")
+                else:
+                    self.logger.warning("No spell checking languages configured")
+        except Exception as e:
+            self.logger.error(f"Failed to configure spell checking: {e}")
+    
+    def _get_spell_checking_languages(self):
+        """Get the list of spell checking languages to use."""
+        try:
+            auto_detect = self.settings.get_boolean("spell-checking-auto-detect")
+            
+            if auto_detect:
+                # Auto-detect from system locale
+                import locale
+                import os
+                
+                try:
+                    # Get the current locale
+                    current_locale = locale.getlocale()[0]
+                    if current_locale:
+                        return [current_locale]
+                    else:
+                        # Fallback to environment variables
+                        lang = os.environ.get('LANG', 'en_US.UTF-8')
+                        lang_code = lang.split('.')[0]  # Extract just the language part
+                        return [lang_code]
+                except Exception as e:
+                    self.logger.warning(f"Failed to auto-detect locale: {e}")
+                    return ['en_US']  # Fallback
+            else:
+                # Use custom languages from settings
+                languages = self.settings.get_strv("spell-checking-languages")
+                return languages if languages else ['en_US']  # Fallback
+        except Exception as e:
+            self.logger.error(f"Error getting spell checking languages: {e}")
+            return ['en_US']  # Fallback
+    
+    def _update_spell_checking(self):
+        """Update spell checking configuration (called from settings dialog)."""
+        try:
+            if hasattr(self, 'webview') and self.webview:
+                web_context = self.webview.get_web_context()
+                if web_context:
+                    self._configure_spell_checking(web_context)
+                    self.logger.info("Spell checking configuration updated")
+                else:
+                    self.logger.warning("No WebContext available for spell checking update")
+            else:
+                self.logger.warning("No WebView available for spell checking update")
+        except Exception as e:
+            self.logger.error(f"Failed to update spell checking: {e}")
     
     def _on_settings_action(self, action, param):
         """Handle settings action."""
