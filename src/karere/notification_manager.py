@@ -93,11 +93,10 @@ class NotificationManager:
         
         if notification_type == "background":
             self.background_notification_count += 1
-            # Only set session_background_shown for "first-session-only" mode
-            frequency = self.settings.get_string("background-notification-frequency")
-            if frequency == "first-session-only":
-                self.session_background_shown = True
+            # Always mark background notification as shown, regardless of current mode
+            self.session_background_shown = True
             self.last_background_notification_time = current_time
+            self.logger.debug(f"Background notification shown, session flag set to True")
             
         # Limit session notification history to last 100 notifications
         if len(self._background_session_notifications) > 100:
@@ -427,18 +426,19 @@ class NotificationManager:
     def _update_session_state(self, notification_type: str, **kwargs):
         """Update session state after sending notification."""
         if notification_type == "background":
-            # Only set session_background_shown for "first-session-only" mode
-            frequency = self.settings.get_string("background-notification-frequency")
-            if frequency == "first-session-only":
-                self.session_background_shown = True
-                self.logger.debug(f"Session background shown flag set to True for 'first-session-only' mode")
+            # Always mark background notification as shown, regardless of current mode
+            self.session_background_shown = True
             self.last_background_notification_time = datetime.now()
+            self.logger.debug(f"Session background shown flag set to True (notification_type: {notification_type})")
     
     def _on_settings_changed(self, settings, key):
         """Handle settings changes for real-time updates."""
         self.logger.debug(f"Notification setting changed: {key}")
         
-        # Reset session state for certain settings changes
+        # Note: We no longer reset session_background_shown when switching to 'first-session-only'
+        # This ensures that if a background notification was already shown in this session,
+        # switching to 'first-session-only' mode won't show it again
         if key == "background-notification-frequency":
-            if settings.get_string(key) == "first-session-only":
-                self.session_background_shown = False
+            new_frequency = settings.get_string(key)
+            self.logger.debug(f"Background notification frequency changed to: {new_frequency}")
+            # Session tracking persists across mode changes within the same session
