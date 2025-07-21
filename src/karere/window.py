@@ -125,24 +125,10 @@ class KarereWindow(Adw.ApplicationWindow):
             self._show_error_dialog("WebView Setup Error", 
                                    "Failed to set up WebView. Please check your system configuration.")
         
-        # Create WebContext with spell checking support first
+        # Create WebView with error handling
         try:
-            self.web_context = WebKit.WebContext.new()
-            self._configure_spell_checking(self.web_context)
-            self.logger.info("WebContext created with spell checking configured")
-        except Exception as e:
-            self.logger.error(f"Failed to create WebContext: {e}")
-            # Fallback to default WebContext
-            self.web_context = None
-        
-        # Create WebView with custom WebContext if available
-        try:
-            if self.web_context:
-                self.webview = WebKit.WebView.new_with_context(self.web_context)
-                self.logger.info("WebView created with custom WebContext")
-            else:
-                self.webview = WebKit.WebView.new()
-                self.logger.info("WebView created with default WebContext")
+            self.webview = WebKit.WebView.new()
+            self.logger.info("WebView created")
         except Exception as e:
             self.logger.error(f"Failed to create WebView: {e}")
             self._show_error_dialog("WebView Error", 
@@ -168,6 +154,9 @@ class KarereWindow(Adw.ApplicationWindow):
         except Exception as e:
             self.logger.error(f"Failed to configure WebView settings: {e}")
             self.logger.warning("Continuing with default WebView settings")
+        
+        # Configure spell checking after WebView is created
+        self._setup_spell_checking()
         
         # Set up script message handler for notifications with error handling
         try:
@@ -388,6 +377,22 @@ class KarereWindow(Adw.ApplicationWindow):
         else:  # follow-system
             style_manager.set_color_scheme(Adw.ColorScheme.DEFAULT)
     
+    def _setup_spell_checking(self):
+        """Set up spell checking for the WebView."""
+        try:
+            if hasattr(self, 'webview') and self.webview:
+                # Get the WebContext from the WebView
+                web_context = self.webview.get_web_context()
+                if web_context:
+                    self._configure_spell_checking(web_context)
+                    self.logger.info("Spell checking setup completed")
+                else:
+                    self.logger.warning("No WebContext available for spell checking setup")
+            else:
+                self.logger.warning("No WebView available for spell checking setup")
+        except Exception as e:
+            self.logger.error(f"Failed to set up spell checking: {e}")
+    
     def _configure_spell_checking(self, web_context):
         """Configure spell checking settings on the WebContext."""
         try:
@@ -443,11 +448,15 @@ class KarereWindow(Adw.ApplicationWindow):
     def _update_spell_checking(self):
         """Update spell checking configuration (called from settings dialog)."""
         try:
-            if hasattr(self, 'web_context') and self.web_context:
-                self._configure_spell_checking(self.web_context)
-                self.logger.info("Spell checking configuration updated")
+            if hasattr(self, 'webview') and self.webview:
+                web_context = self.webview.get_web_context()
+                if web_context:
+                    self._configure_spell_checking(web_context)
+                    self.logger.info("Spell checking configuration updated")
+                else:
+                    self.logger.warning("No WebContext available for spell checking update")
             else:
-                self.logger.warning("No WebContext available for spell checking update")
+                self.logger.warning("No WebView available for spell checking update")
         except Exception as e:
             self.logger.error(f"Failed to update spell checking: {e}")
     
