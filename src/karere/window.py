@@ -380,16 +380,13 @@ class KarereWindow(Adw.ApplicationWindow):
     def _setup_spell_checking(self):
         """Set up spell checking for the WebView."""
         try:
-            if hasattr(self, 'webview') and self.webview:
-                # Get the WebContext from the WebView
-                web_context = self.webview.get_web_context()
-                if web_context:
-                    self._configure_spell_checking(web_context)
-                    self.logger.info("Spell checking setup completed")
-                else:
-                    self.logger.warning("No WebContext available for spell checking setup")
+            # Get the default WebContext (WebKitGTK 6.0 approach)
+            web_context = WebKit.WebContext.get_default()
+            if web_context:
+                self._configure_spell_checking(web_context)
+                self.logger.info("Spell checking setup completed")
             else:
-                self.logger.warning("No WebView available for spell checking setup")
+                self.logger.warning("No default WebContext available for spell checking setup")
         except Exception as e:
             self.logger.error(f"Failed to set up spell checking: {e}")
     
@@ -398,17 +395,45 @@ class KarereWindow(Adw.ApplicationWindow):
         try:
             # Check if spell checking is enabled
             spell_checking_enabled = self.settings.get_boolean("spell-checking-enabled")
+            self.logger.info(f"Configuring spell checking: enabled={spell_checking_enabled}")
+            
+            # Check current state first
+            try:
+                current_enabled = web_context.get_spell_checking_enabled()
+                self.logger.info(f"Current WebContext spell checking state: {current_enabled}")
+            except Exception as e:
+                self.logger.warning(f"Could not get current spell checking state: {e}")
             
             # Enable or disable spell checking
-            web_context.set_spell_checking_enabled(spell_checking_enabled)
-            self.logger.info(f"WebKit spell checking {'enabled' if spell_checking_enabled else 'disabled'}")
+            try:
+                web_context.set_spell_checking_enabled(spell_checking_enabled)
+                self.logger.info(f"Called set_spell_checking_enabled({spell_checking_enabled})")
+                
+                # Verify it was set
+                new_state = web_context.get_spell_checking_enabled()
+                self.logger.info(f"Verified spell checking state after setting: {new_state}")
+            except Exception as e:
+                self.logger.error(f"Failed to set spell checking enabled: {e}")
+                return
             
             if spell_checking_enabled:
                 # Configure spell checking languages
                 languages = self._get_spell_checking_languages()
+                self.logger.info(f"Setting spell checking languages: {languages}")
+                
                 if languages:
-                    web_context.set_spell_checking_languages(languages)
-                    self.logger.info(f"Spell checking languages set to: {', '.join(languages)}")
+                    try:
+                        web_context.set_spell_checking_languages(languages)
+                        self.logger.info(f"Called set_spell_checking_languages({languages})")
+                        
+                        # Verify languages were set
+                        try:
+                            current_languages = web_context.get_spell_checking_languages()
+                            self.logger.info(f"Verified spell checking languages: {current_languages}")
+                        except Exception as e:
+                            self.logger.warning(f"Could not verify spell checking languages: {e}")
+                    except Exception as e:
+                        self.logger.error(f"Failed to set spell checking languages: {e}")
                 else:
                     self.logger.warning("No spell checking languages configured")
         except Exception as e:
@@ -448,15 +473,13 @@ class KarereWindow(Adw.ApplicationWindow):
     def _update_spell_checking(self):
         """Update spell checking configuration (called from settings dialog)."""
         try:
-            if hasattr(self, 'webview') and self.webview:
-                web_context = self.webview.get_web_context()
-                if web_context:
-                    self._configure_spell_checking(web_context)
-                    self.logger.info("Spell checking configuration updated")
-                else:
-                    self.logger.warning("No WebContext available for spell checking update")
+            # Get the default WebContext (WebKitGTK 6.0 approach)
+            web_context = WebKit.WebContext.get_default()
+            if web_context:
+                self._configure_spell_checking(web_context)
+                self.logger.info("Spell checking configuration updated")
             else:
-                self.logger.warning("No WebView available for spell checking update")
+                self.logger.warning("No default WebContext available for spell checking update")
         except Exception as e:
             self.logger.error(f"Failed to update spell checking: {e}")
     
