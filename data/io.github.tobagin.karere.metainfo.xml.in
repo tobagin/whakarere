@@ -65,7 +65,22 @@
   </content_rating>
   
   <releases>
-    <release version="@VERSION@" date="2025-07-20">
+    <release version="@VERSION@" date="2025-07-21">
+      <description>
+        <p>Enhanced validation and reliability improvements for notification detection</p>
+        <ul>
+          <li>Added aggressive validation for message count detection to eliminate false positives</li>
+          <li>Implemented visibility checks for all DOM elements to ignore hidden unread indicators</li>
+          <li>Added cross-validation between detection methods for high message counts (>10)</li>
+          <li>Enhanced context validation to ensure detected numbers are actual unread message counts</li>
+          <li>Improved aria-label and chat container detection with proper visibility filtering</li>
+          <li>Fixed persistent false "90 new messages" notifications by rejecting suspicious counts</li>
+          <li>Enhanced notification system reliability with comprehensive error handling</li>
+          <li>Strengthened production build stability with advanced validation layers</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.4.2" date="2025-07-20">
       <description>
         <p>Fix false message notifications and session tracking issues</p>
         <ul>

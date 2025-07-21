@@ -508,16 +508,28 @@ class KarereWindow(Adw.ApplicationWindow):
                             return count;
                         },
                         
-                        // Method 2: Aria-label based detection
+                        // Method 2: Aria-label based detection (with visibility validation)
                         () => {
                             const elements = document.querySelectorAll('[aria-label*="unread"], [aria-label*="message"]');
                             let count = 0;
                             elements.forEach(el => {
+                                // Check if element is actually visible
+                                const style = window.getComputedStyle(el);
+                                if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+                                    return; // Skip hidden elements
+                                }
+                                
                                 const ariaLabel = el.getAttribute('aria-label') || '';
                                 const matches = ariaLabel.match(/\\d+/g);
                                 if (matches) {
                                     const num = parseInt(matches[0]) || 0;
-                                    if (num > 0) {
+                                    
+                                    // Additional validation: make sure this is actually an unread indicator
+                                    const isUnreadIndicator = ariaLabel.toLowerCase().includes('unread') ||
+                                                             el.closest('[data-testid="unread-count"]') ||
+                                                             el.className.includes('unread');
+                                    
+                                    if (num > 0 && isUnreadIndicator) {
                                         count += num;
                                         foundElements.push({method: 'aria-label', ariaLabel, num});
                                     }
@@ -536,17 +548,35 @@ class KarereWindow(Adw.ApplicationWindow):
                             return 0;
                         },
                         
-                        // Method 4: Chat container analysis
+                        // Method 4: Chat container analysis (with visibility checks)
                         () => {
                             const chatContainers = document.querySelectorAll('div[data-testid="cell-frame-container"]');
                             let count = 0;
                             chatContainers.forEach(container => {
+                                // Only count if the container is actually visible
+                                const containerStyle = window.getComputedStyle(container);
+                                if (containerStyle.display === 'none' || containerStyle.visibility === 'hidden') {
+                                    return; // Skip hidden containers
+                                }
+                                
                                 const spans = container.querySelectorAll('span');
                                 spans.forEach(span => {
                                     const text = span.textContent?.trim();
                                     if (text && /^\\d+$/.test(text)) {
                                         const num = parseInt(text);
-                                        if (num > 0 && num < 100) { // Reasonable message count
+                                        
+                                        // Additional validation: check if this span is actually an unread indicator
+                                        const spanStyle = window.getComputedStyle(span);
+                                        const isVisibleSpan = spanStyle.display !== 'none' && 
+                                                            spanStyle.visibility !== 'hidden' && 
+                                                            spanStyle.opacity !== '0';
+                                        
+                                        // Check if it's in a context that looks like an unread indicator
+                                        const hasUnreadContext = span.closest('[data-testid="unread-count"]') ||
+                                                               span.className.includes('unread') ||
+                                                               span.getAttribute('aria-label')?.includes('unread');
+                                        
+                                        if (num > 0 && num < 100 && isVisibleSpan && hasUnreadContext) {
                                             count += num;
                                             foundElements.push({method: 'chat-container', text, num});
                                         }
@@ -571,9 +601,35 @@ class KarereWindow(Adw.ApplicationWindow):
                         if (methodCount > 0) hasNewMessages = true;
                     }
                     
-                    // Use the highest count from valid methods, but avoid obviously wrong counts
+                    // Use the highest count from valid methods, but add aggressive validation
                     const validCounts = detectionResults.filter(count => count >= 0 && count < 999);
-                    totalUnread = validCounts.length > 0 ? Math.max(...validCounts) : 0;
+                    
+                    // If we get a large count (>10), validate it by checking if there are actually visible unread indicators
+                    let potentialCount = validCounts.length > 0 ? Math.max(...validCounts) : 0;
+                    
+                    if (potentialCount > 10) {
+                        // Cross-validate with actual visible unread indicators
+                        const visibleUnreadIndicators = document.querySelectorAll('[data-testid="unread-count"]:not([style*="display: none"]), .unread-count:not([style*="display: none"])');
+                        const visibleUnreadChats = document.querySelectorAll('[data-testid="cell-frame-container"]:has([data-testid="unread-count"])');
+                        
+                        // If no visible unread indicators but we detected a high count, it's likely false
+                        if (visibleUnreadIndicators.length === 0 && visibleUnreadChats.length === 0) {
+                            console.warn(`Karere: Rejecting suspicious high count ${potentialCount} - no visible unread indicators found`);
+                            potentialCount = 0;
+                        }
+                        
+                        // Additional check: see if we can find the actual chat list with unread counts
+                        const chatList = document.querySelector('[data-testid="chat-list"], [aria-label*="Chat list" i]');
+                        if (chatList) {
+                            const unreadChatsInList = chatList.querySelectorAll('[data-testid="unread-count"], .unread-count');
+                            if (unreadChatsInList.length === 0 && potentialCount > 5) {
+                                console.warn(`Karere: Rejecting high count ${potentialCount} - chat list shows no unread messages`);
+                                potentialCount = 0;
+                            }
+                        }
+                    }
+                    
+                    totalUnread = potentialCount;
                     
                     // Log detection results when there are changes
                     if (totalUnread !== lastMessageCount) {
