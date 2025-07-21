@@ -82,6 +82,15 @@
   <releases>
     <release version="@VERSION@" date="2025-07-21">
       <description>
+        <p>Version bump for major architectural changes</p>
+        <ul>
+          <li>Bumped version to 0.5.0 to reflect the significant WebKit notification system improvements</li>
+          <li>Consolidated notification system enhancements under proper semantic versioning</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.4.6" date="2025-07-21">
+      <description>
         <p>Major architectural improvement: Native WebKit notifications</p>
         <ul>
           <li>Replaced JavaScript injection notification system with native WebKit notification API</li>
