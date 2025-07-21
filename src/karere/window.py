@@ -754,6 +754,8 @@ class KarereWindow(Adw.ApplicationWindow):
     
     def _on_show_notification(self, webview, notification):
         """Handle native WebKit notifications from WhatsApp Web."""
+        self.logger.info("WEBKIT SHOW-NOTIFICATION SIGNAL TRIGGERED!")
+        
         try:
             # Extract notification data from WebKitNotification
             title = notification.get_title() or "WhatsApp"
@@ -761,26 +763,36 @@ class KarereWindow(Adw.ApplicationWindow):
             tag = notification.get_tag() or None
             notification_id = notification.get_id() or None
             
-            self.logger.info(f"Native web notification: {title} - {body}")
+            self.logger.info(f"WebKit notification details - Title: '{title}', Body: '{body}', Tag: '{tag}', ID: '{notification_id}'")
             
             # Send through existing notification manager for filtering and preferences
             if hasattr(self.app, 'send_notification'):
-                self.app.send_notification(
-                    title,
-                    body,
-                    notification_type="web_notification",
-                    notification_id=notification_id,
-                    tag=tag
-                )
+                self.logger.info("Calling app.send_notification...")
+                try:
+                    self.app.send_notification(
+                        title,
+                        body,
+                        notification_type="web_notification",
+                        notification_id=notification_id,
+                        tag=tag
+                    )
+                    self.logger.info("Successfully called app.send_notification")
+                except Exception as send_error:
+                    self.logger.error(f"Error in app.send_notification: {send_error}")
+            else:
+                self.logger.error("app.send_notification method not available!")
                 
             # Handle notification click by connecting to the clicked signal
             notification.connect("clicked", self._on_notification_clicked)
             notification.connect("closed", self._on_notification_closed)
             
+            self.logger.info("WebKit notification handler completed successfully")
             return True  # We handled the notification
             
         except Exception as e:
             self.logger.error(f"Error handling web notification: {e}")
+            import traceback
+            self.logger.error(f"Traceback: {traceback.format_exc()}")
             return False  # Let WebKit handle it
     
     def _on_notification_clicked(self, notification):
