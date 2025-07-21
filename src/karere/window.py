@@ -153,12 +153,13 @@ class KarereWindow(Adw.ApplicationWindow):
             webkit_settings.set_auto_load_images(True)
             self.logger.info("Additional WebKit permissions enabled")
             
-            # Set user agent to avoid mobile version and show custom app name
-            from .application import BUS_NAME
-            app_name = "Karere.dev" if BUS_NAME.endswith('.dev') else "Karere"
-            # WhatsApp Web detects the Chrome part, so replace it with our app name
-            user_agent = f"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) {app_name}/120.0.0.0 Safari/537.36"
-            webkit_settings.set_user_agent(user_agent)
+            # Use default user agent for testing - custom user agent disabled
+            # from .application import BUS_NAME
+            # app_name = "Karere.dev" if BUS_NAME.endswith('.dev') else "Karere"
+            # # WhatsApp Web detects the Chrome part, so replace it with our app name
+            # user_agent = f"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) {app_name}/120.0.0.0 Safari/537.36"
+            # webkit_settings.set_user_agent(user_agent)
+            self.logger.info("Using default WebKit user agent for notification testing")
             
             self.logger.info("WebView settings configured")
         except Exception as e:
@@ -189,8 +190,9 @@ class KarereWindow(Adw.ApplicationWindow):
         # Set up WebView event handlers for error handling
         self._setup_webview_error_handlers()
         
-        # Inject user agent override script
-        self._inject_user_agent_override()
+        # User agent override disabled for testing
+        # self._inject_user_agent_override()
+        self.logger.info("User agent override disabled for notification testing")
         
         # Load WhatsApp Web with error handling
         try:
@@ -237,8 +239,8 @@ class KarereWindow(Adw.ApplicationWindow):
             WebKit.UserScriptInjectionTime.START,
             None, None
         )
-        user_content_manager.add_script(script)
-        self.logger.info(f"User agent override script injected for {app_name}")
+        # user_content_manager.add_script(script)
+        self.logger.info("User agent override method disabled for notification testing")
     
     def _setup_webview_error_handlers(self):
         """Set up WebView error handlers for production error handling."""
