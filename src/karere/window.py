@@ -304,9 +304,10 @@ class KarereWindow(Adw.ApplicationWindow):
         """Handle WebView load events with error handling."""
         try:
             if load_event == WebKit.LoadEvent.FINISHED:
-                self.logger.info("Page load finished, injecting notification script (CSS fixes disabled)")
+                self.logger.info("Page load finished, injecting notification script")
                 self._inject_notification_script()
-                self._inject_css_fixes()
+                # CSS injection disabled - was causing emoji rendering issues
+                # self._inject_css_fixes()
             elif load_event == WebKit.LoadEvent.STARTED:
                 self.logger.info("Page load started")
             elif load_event == WebKit.LoadEvent.COMMITTED:

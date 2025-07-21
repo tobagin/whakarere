@@ -67,6 +67,21 @@
   <releases>
     <release version="@VERSION@" date="2025-07-21">
       <description>
+        <p>Bug fixes and stability improvements</p>
+        <ul>
+          <li>Disabled CSS injection that was causing emoji rendering issues and UI interference</li>
+          <li>Fixed spell checking configuration to work properly in Flatpak environment</li>
+          <li>Improved WhatsApp Web compatibility by using standard rendering</li>
+          <li>Enhanced page load handling with better error logging</li>
+          <li>Removed invasive JavaScript that affected chat avatars and emoji display</li>
+          <li>Optimized application startup and page loading performance</li>
+          <li>Better WebKit integration with cleaner script injection</li>
+          <li>Improved stability and reduced UI glitches</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.4.4" date="2025-07-21">
+      <description>
         <p>Project cleanup and contact information updates</p>
         <ul>
           <li>Updated all contact information from mudeprolinux.com to GitHub-based contacts</li>
