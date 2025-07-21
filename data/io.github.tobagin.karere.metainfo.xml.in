@@ -4,7 +4,7 @@
   
   <!-- Flatpak ID transition support -->
   <provides>
-    <id>com.mudeprolinux.whakarere</id>
+    <id>io.github.tobagin.karere</id>
   </provides>
   <replaces>
     <id>com.mudeprolinux.whakarere</id>
@@ -66,6 +66,21 @@
   
   <releases>
     <release version="@VERSION@" date="2025-07-21">
+      <description>
+        <p>Project cleanup and contact information updates</p>
+        <ul>
+          <li>Updated all contact information from mudeprolinux.com to GitHub-based contacts</li>
+          <li>Replaced author email across all project files with GitHub noreply address</li>
+          <li>Updated website references to point to GitHub repository</li>
+          <li>Cleaned up outdated domain references in README, pyproject.toml, setup.py, and package metadata</li>
+          <li>Fixed Flatpak ID transition elements to properly provide io.github.tobagin.karere</li>
+          <li>Maintained backward compatibility for users migrating from com.mudeprolinux.whakarere</li>
+          <li>Modernized project identity and contact information consistency</li>
+          <li>Enhanced project maintainability with unified contact details</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.4.4" date="2025-07-21">
       <description>
         <p>Background notification session tracking improvements</p>
         <ul>

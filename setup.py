@@ -37,7 +37,7 @@ setup(
     name='karere',
     version=get_version(),
     author='Thiago Fernandes',
-    author_email='contact@mudeprolinux.com',
+    author_email='140509353+tobagin@users.noreply.github.com',
     description='A modern GTK4 WhatsApp client for Linux',
     long_description=get_long_description(),
     long_description_content_type='text/markdown',

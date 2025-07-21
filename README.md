@@ -229,7 +229,7 @@ Karere is licensed under the **GPL-3.0-or-later** license. See [LICENSE](LICENSE
 
 - **Issues**: Report bugs and feature requests on [GitHub Issues](https://github.com/tobagin/karere/issues)
 - **Discussions**: Join community discussions on [GitHub Discussions](https://github.com/tobagin/karere/discussions)
-- **Website**: Visit [mudeprolinux.com](http://www.mudeprolinux.com/) for more information
+- **Website**: Visit [github.com/tobagin/karere](https://github.com/tobagin/karere) for more information
 
 ## Acknowledgments
 

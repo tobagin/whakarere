@@ -7,4 +7,4 @@ A simple WhatsApp client using GTK4, Libadwaita, and WebKitGTK.
 from ._version import __version__, get_version_info
 
 __author__ = "Thiago Fernandes"
-__email__ = "contact@mudeprolinux.com"
+__email__ = "140509353+tobagin@users.noreply.github.com"

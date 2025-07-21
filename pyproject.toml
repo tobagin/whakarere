@@ -9,7 +9,7 @@ description = "A modern GTK4 WhatsApp client for Linux"
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}
 authors = [
-    {name = "Thiago Fernandes", email = "contact@mudeprolinux.com"},
+    {name = "Thiago Fernandes", email = "140509353+tobagin@users.noreply.github.com"},
 ]
 keywords = ["whatsapp", "gtk4", "libadwaita", "webkit", "messaging", "chat"]
 classifiers = [
