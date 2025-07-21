@@ -17,7 +17,10 @@ def create_about_dialog(parent_window):
     
     # Set application information
     about_dialog.set_application_name("Karere")
-    about_dialog.set_application_icon("io.github.tobagin.karere")
+    
+    # Use dynamic app ID for icon
+    app_id = parent_window.get_application().get_application_id()
+    about_dialog.set_application_icon(app_id)
     about_dialog.set_developer_name("Thiago Fernandes")
     about_dialog.set_version(__version__)
     about_dialog.set_website("https://github.com/tobagin/karere")

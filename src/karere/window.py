@@ -162,15 +162,8 @@ class KarereWindow(Adw.ApplicationWindow):
         # Configure spell checking after WebView is created
         self._setup_spell_checking()
         
-        # Set up script message handler for notifications with error handling
-        try:
-            user_content_manager = self.webview.get_user_content_manager()
-            user_content_manager.connect("script-message-received::notification", self._on_notification_message)
-            user_content_manager.register_script_message_handler("notification")
-            self.logger.info("Script message handler configured")
-        except Exception as e:
-            self.logger.error(f"Failed to set up script message handler: {e}")
-            self.logger.warning("Continuing without notification script handler")
+        # Native WebKit notification handling replaces JavaScript message handlers
+        # No script message handlers needed - using WebKit's native notification system
         
         # Add WebView to container with expand properties
         self.webview.set_vexpand(True)
@@ -179,6 +172,10 @@ class KarereWindow(Adw.ApplicationWindow):
         
         # Connect to page load events to inject JavaScript
         self.webview.connect("load-changed", self._on_load_changed)
+        
+        # Set up native WebKit notification handling
+        self.webview.connect("permission-request", self._on_permission_request)
+        self.webview.connect("show-notification", self._on_show_notification)
         
         # Set up download handling
         self.setup_download_directory()
@@ -308,10 +305,9 @@ class KarereWindow(Adw.ApplicationWindow):
         """Handle WebView load events with error handling."""
         try:
             if load_event == WebKit.LoadEvent.FINISHED:
-                self.logger.info("Page load finished, injecting notification script")
-                self._inject_notification_script()
-                # CSS injection disabled - was causing emoji rendering issues
-                # self._inject_css_fixes()
+                self.logger.info("Page load finished - using native WebKit notifications")
+                # Native WebKit notification handling enabled via permission-request and show-notification signals
+                # JavaScript notification injection system removed for better reliability and performance
             elif load_event == WebKit.LoadEvent.STARTED:
                 self.logger.info("Page load started")
             elif load_event == WebKit.LoadEvent.COMMITTED:
@@ -508,8 +504,8 @@ class KarereWindow(Adw.ApplicationWindow):
         # Delegate to the error-handling version
         self._on_load_changed_with_error_handling(webview, load_event)
     
-    def _inject_notification_script(self):
-        """Inject JavaScript to detect new WhatsApp messages."""
+    # JavaScript notification injection system removed - now using native WebKit notifications
+    # This provides better performance, reliability, and future-proofing
         js_script = """
         (function() {
             console.log('Karere: Notification script injected');
@@ -879,406 +875,8 @@ class KarereWindow(Adw.ApplicationWindow):
         self.logger.info("Injecting notification detection script")
         self.webview.evaluate_javascript(js_script, -1, None, None, None, self._on_javascript_result, None)
     
-    def _inject_css_fixes(self):
-        """CSS injection disabled - was making emoji rendering worse."""
-        self.logger.info("CSS injection disabled for emoji fixes - using normal WhatsApp Web rendering")
-        # Note: If future emoji debugging is needed, use self.logger instead of console.log
-        return
-        css_fixes = """
-        (function() {
-            console.log('Karere: Injecting CSS fixes for emoji rendering');
-            
-            // Comprehensive DOM inspection function
-            function inspectEmojiDOM() {
-                console.log('Karere: === DOM INSPECTION START ===');
-                
-                // Look for emoji picker elements
-                const emojiPickerSelectors = [
-                    '[data-emoji-picker]',
-                    '[class*="emoji-picker"]',
-                    '[class*="emoji-container"]',
-                    '[class*="emoji-category"]',
-                    '[role="button"][data-emoji]',
-                    '[role="img"][data-emoji]',
-                    'div[class*="emoji"] img',
-                    'span[class*="emoji"]'
-                ];
-                
-                emojiPickerSelectors.forEach(selector => {
-                    const elements = document.querySelectorAll(selector);
-                    if (elements.length > 0) {
-                        console.log(`Karere: Found ${elements.length} elements for selector: ${selector}`);
-                        console.log('Karere: First element:', elements[0]);
-                        console.log('Karere: Element classes:', elements[0].className);
-                        console.log('Karere: Element attributes:', elements[0].attributes);
-                        if (elements[0].style) {
-                            console.log('Karere: Element computed styles:', window.getComputedStyle(elements[0]));
-                        }
-                    }
-                });
-                
-                // Look for all images in the page
-                const allImages = document.querySelectorAll('img');
-                let emojiImages = [];
-                allImages.forEach(img => {
-                    if (img.src && (img.src.includes('emoji') || img.alt.includes('emoji'))) {
-                        emojiImages.push(img);
-                    }
-                });
-                console.log(`Karere: Found ${emojiImages.length} emoji images out of ${allImages.length} total images`);
-                
-                // Look for elements with specific WhatsApp classes
-                const whatsappEmojiClasses = [
-                    '_2cNQ', '_3MZy', '_1z3p', '_1h5g', '_3qeU', '_2lCm', '_2lCp'
-                ];
-                whatsappEmojiClasses.forEach(className => {
-                    const elements = document.querySelectorAll(`.${className}`);
-                    if (elements.length > 0) {
-                        console.log(`Karere: Found ${elements.length} elements with WhatsApp class: ${className}`);
-                        console.log('Karere: First element:', elements[0]);
-                        console.log('Karere: Element styles:', window.getComputedStyle(elements[0]));
-                        console.log('Karere: Element dimensions:', {
-                            width: elements[0].offsetWidth,
-                            height: elements[0].offsetHeight,
-                            clientWidth: elements[0].clientWidth,
-                            clientHeight: elements[0].clientHeight,
-                            scrollWidth: elements[0].scrollWidth,
-                            scrollHeight: elements[0].scrollHeight
-                        });
-                    }
-                });
-                
-                // Look for emoji panel specifically
-                const emojiPanel = document.querySelector('div[role="button"][data-tab="1"]');
-                if (emojiPanel) {
-                    console.log('Karere: Found emoji panel:', emojiPanel);
-                    console.log('Karere: Panel classes:', emojiPanel.className);
-                    console.log('Karere: Panel styles:', window.getComputedStyle(emojiPanel));
-                }
-                
-                // Try to find the emoji picker that opens when you click the emoji button
-                const emojiButton = document.querySelector('[data-tab="1"], [data-icon="smiley"]');
-                if (emojiButton) {
-                    console.log('Karere: Found emoji button:', emojiButton);
-                    console.log('Karere: Button classes:', emojiButton.className);
-                    
-                    // Try to trigger the emoji picker to see its DOM
-                    setTimeout(() => {
-                        emojiButton.click();
-                        setTimeout(() => {
-                            const emojiPickerContent = document.querySelector('[data-emoji-picker], [class*="emoji-picker"]');
-                            if (emojiPickerContent) {
-                                console.log('Karere: Emoji picker opened:', emojiPickerContent);
-                                console.log('Karere: Picker classes:', emojiPickerContent.className);
-                                console.log('Karere: Picker children:', emojiPickerContent.children);
-                                
-                                // Look for emoji elements inside the picker
-                                const emojiElements = emojiPickerContent.querySelectorAll('*');
-                                console.log('Karere: Elements inside picker:', emojiElements.length);
-                                
-                                // Close the picker
-                                document.body.click();
-                            }
-                        }, 1000);
-                    }, 1000);
-                }
-                
-                console.log('Karere: === DOM INSPECTION END ===');
-            }
-            
-            // Run inspection after page loads
-            setTimeout(inspectEmojiDOM, 3000);
-            
-            // Add MutationObserver to detect when emoji picker opens
-            const observer = new MutationObserver((mutations) => {
-                mutations.forEach((mutation) => {
-                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-                        mutation.addedNodes.forEach((node) => {
-                            if (node.nodeType === Node.ELEMENT_NODE) {
-                                // Check if this is an emoji picker or contains emoji elements
-                                const isEmojiPicker = node.querySelector && (
-                                    node.querySelector('[class*="emoji"]') ||
-                                    node.querySelector('[data-emoji]') ||
-                                    node.className.includes('emoji') ||
-                                    node.id.includes('emoji')
-                                );
-                                
-                                if (isEmojiPicker) {
-                                    console.log('Karere: Emoji picker detected in DOM:', node);
-                                    console.log('Karere: Picker classes:', node.className);
-                                    console.log('Karere: Picker children:', node.children);
-                                    
-                                    // Apply fixes immediately
-                                    setTimeout(() => {
-                                        applyEmojiFixesToElement(node);
-                                    }, 100);
-                                }
-                            }
-                        });
-                    }
-                });
-            });
-            
-            // Start observing DOM changes
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-            
-            // Function to apply fixes to a specific element
-            function applyEmojiFixesToElement(element) {
-                console.log('Karere: Applying fixes to element:', element);
-                
-                // Find all potential emoji elements within
-                const emojiElements = element.querySelectorAll('*');
-                let fixedCount = 0;
-                
-                emojiElements.forEach(el => {
-                    const isEmoji = el.tagName === 'IMG' || 
-                                  el.className.includes('emoji') || 
-                                  el.hasAttribute('data-emoji') ||
-                                  el.getAttribute('alt')?.includes('emoji') ||
-                                  el.src?.includes('emoji');
-                    if (isEmoji) {
-                        // This might be an emoji
-                        el.style.height = '24px';
-                        el.style.width = '24px';
-                        el.style.minHeight = '24px';
-                        el.style.minWidth = '24px';
-                        el.style.display = 'inline-block';
-                        el.style.verticalAlign = 'middle';
-                        el.style.overflow = 'visible';
-                        el.style.objectFit = 'contain';
-                        
-                        if (el.parentElement) {
-                            el.parentElement.style.height = '32px';
-                            el.parentElement.style.minHeight = '32px';
-                            el.parentElement.style.display = 'flex';
-                            el.parentElement.style.alignItems = 'center';
-                            el.parentElement.style.justifyContent = 'center';
-                            el.parentElement.style.overflow = 'visible';
-                        }
-                        
-                        fixedCount++;
-                    }
-                });
-                
-                console.log(`Karere: Applied fixes to ${fixedCount} emoji elements`);
-            }
-            
-            // Add manual trigger for debugging
-            window.karereDebugEmojis = function() {
-                console.log('Karere: Manual emoji debug triggered');
-                inspectEmojiDOM();
-                
-                // Also try to find and fix all emojis on the page
-                const allElements = document.querySelectorAll('*');
-                let totalFixed = 0;
-                allElements.forEach(el => {
-                    if (el.className.includes('emoji') || el.hasAttribute('data-emoji')) {
-                        applyEmojiFixesToElement(el);
-                        totalFixed++;
-                    }
-                });
-                console.log(`Karere: Manual fix applied to ${totalFixed} potential emoji containers`);
-            };
-            
-            console.log('Karere: Emoji debugging system initialized. Use window.karereDebugEmojis() to trigger manual inspection.');
-            
-            const style = document.createElement('style');
-            style.id = 'karere-emoji-fixes';
-            style.textContent = `
-                /* Universal emoji fixes - target all possible emoji elements */
-                * img[alt*="emoji" i],
-                * img[src*="emoji" i],
-                * span[data-emoji-index],
-                * span[data-emoji],
-                * [class*="emoji" i],
-                * [class*="_2cNQ" i],
-                * [class*="_3MZy" i],
-                * [role="img"][data-emoji],
-                * [role="button"] img[alt],
-                * div[data-emoji-picker] img,
-                * div[data-emoji-picker] span {
-                    height: 24px !important;
-                    width: 24px !important;
-                    min-height: 24px !important;
-                    min-width: 24px !important;
-                    max-height: 24px !important;
-                    max-width: 24px !important;
-                    line-height: 24px !important;
-                    display: inline-block !important;
-                    vertical-align: middle !important;
-                    object-fit: contain !important;
-                    font-size: 20px !important;
-                    box-sizing: border-box !important;
-                }
-                
-                /* Force container heights for emoji pickers */
-                * [class*="emoji" i]:not(img):not(span),
-                * [class*="_2cNQ" i],
-                * [class*="_3MZy" i],
-                * [data-emoji-picker] > div,
-                * [data-emoji-picker] > div > div,
-                * [data-emoji-picker] * {
-                    min-height: 32px !important;
-                    height: auto !important;
-                    line-height: 32px !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    padding: 4px !important;
-                    box-sizing: border-box !important;
-                }
-                
-                /* Specific WhatsApp Web selectors - more aggressive */
-                ._2cNQ, ._3MZy, 
-                ._2cNQ._3MZy,
-                [class*="_2cNQ"],
-                [class*="_3MZy"] {
-                    min-height: 32px !important;
-                    height: 32px !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    padding: 4px !important;
-                    box-sizing: border-box !important;
-                    overflow: visible !important;
-                }
-                
-                /* Fix for emoji images specifically */
-                ._2cNQ img,
-                ._3MZy img,
-                ._2cNQ._3MZy img,
-                [class*="_2cNQ"] img,
-                [class*="_3MZy"] img {
-                    height: 24px !important;
-                    width: 24px !important;
-                    min-height: 24px !important;
-                    min-width: 24px !important;
-                    object-fit: contain !important;
-                    vertical-align: middle !important;
-                    display: inline-block !important;
-                }
-                
-                /* Universal emoji text rendering */
-                span[data-emoji-index],
-                span[data-emoji],
-                [role="img"][data-emoji],
-                * [class*="emoji" i]:not(img) {
-                    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", sans-serif !important;
-                    font-size: 20px !important;
-                    line-height: 24px !important;
-                    height: 24px !important;
-                    width: 24px !important;
-                    display: inline-block !important;
-                    text-align: center !important;
-                    vertical-align: middle !important;
-                    font-variant-emoji: emoji !important;
-                    text-rendering: optimizeLegibility !important;
-                    -webkit-font-smoothing: antialiased !important;
-                    -moz-osx-font-smoothing: grayscale !important;
-                }
-                
-                /* Fix grid layouts */
-                [data-emoji-picker],
-                [data-emoji-picker] > div,
-                * [class*="emoji-picker" i],
-                * [class*="emoji-category" i] {
-                    display: grid !important;
-                    grid-template-columns: repeat(auto-fill, 32px) !important;
-                    gap: 4px !important;
-                    padding: 4px !important;
-                    box-sizing: border-box !important;
-                }
-                
-                /* Force visible overflow for clipped elements */
-                [data-emoji-picker] *,
-                * [class*="emoji" i] {
-                    overflow: visible !important;
-                }
-                
-                /* Debug border to see what we're targeting */
-                .karere-debug-emoji {
-                    border: 2px solid red !important;
-                    background: rgba(255, 0, 0, 0.1) !important;
-                }
-            `;
-            
-            document.head.appendChild(style);
-            console.log('Karere: CSS fixes applied for emoji rendering');
-            
-            // More aggressive reflow with debugging
-            setTimeout(() => {
-                console.log('Karere: Starting aggressive emoji element fixing...');
-                
-                // Find all potential emoji elements
-                const selectors = [
-                    'img[alt*="emoji" i]',
-                    'img[src*="emoji" i]',
-                    'span[data-emoji-index]',
-                    'span[data-emoji]',
-                    '[class*="emoji" i]',
-                    '[class*="_2cNQ" i]',
-                    '[class*="_3MZy" i]',
-                    '[role="img"][data-emoji]',
-                    '[data-emoji-picker] img',
-                    '[data-emoji-picker] span'
-                ];
-                
-                selectors.forEach(selector => {
-                    const elements = document.querySelectorAll(selector);
-                    console.log(`Karere: Found ${elements.length} elements for selector: ${selector}`);
-                    
-                    elements.forEach(el => {
-                        // Force dimensions directly
-                        el.style.height = '24px';
-                        el.style.width = '24px';
-                        el.style.minHeight = '24px';
-                        el.style.minWidth = '24px';
-                        el.style.maxHeight = '24px';
-                        el.style.maxWidth = '24px';
-                        el.style.lineHeight = '24px';
-                        el.style.display = 'inline-block';
-                        el.style.verticalAlign = 'middle';
-                        el.style.objectFit = 'contain';
-                        el.style.overflow = 'visible';
-                        
-                        // Add debug class
-                        el.classList.add('karere-debug-emoji');
-                        
-                        // Force reflow
-                        el.offsetHeight;
-                        
-                        // Fix parent container
-                        if (el.parentElement) {
-                            el.parentElement.style.minHeight = '32px';
-                            el.parentElement.style.height = 'auto';
-                            el.parentElement.style.display = 'flex';
-                            el.parentElement.style.alignItems = 'center';
-                            el.parentElement.style.justifyContent = 'center';
-                            el.parentElement.style.padding = '4px';
-                            el.parentElement.style.overflow = 'visible';
-                        }
-                    });
-                });
-                
-                console.log('Karere: Aggressive emoji fixing completed');
-            }, 3000);
-            
-        })();
-        """
-        
-        self.webview.evaluate_javascript(css_fixes, -1, None, None, None, self._on_css_fixes_result, None)
-    
-    def _on_css_fixes_result(self, webview, task, user_data):
-        """Handle CSS fixes injection result."""
-        try:
-            webview.evaluate_javascript_finish(task)
-            self.logger.debug("CSS fixes injection completed successfully")
-        except Exception as e:
-            self.logger.error(f"CSS fixes injection failed: {e}")
-    
+    # CSS injection system removed - not needed for current functionality
+
     def _on_javascript_result(self, webview, task, user_data):
         """Handle JavaScript execution result."""
         try:
@@ -1287,67 +885,10 @@ class KarereWindow(Adw.ApplicationWindow):
         except Exception as e:
             self.logger.error(f"JavaScript injection failed: {e}")
     
-    def _on_notification_message(self, user_content_manager, message):
-        """Handle notification messages from JavaScript with NotificationManager integration."""
-        try:
-            # Get the message data - handle both old and new WebKit API
-            try:
-                js_value = message.get_js_value()
-            except AttributeError:
-                # Fallback for older WebKit versions
-                js_value = message
-                
-            if hasattr(js_value, 'is_object') and js_value.is_object():
-                # Extract message properties with fallbacks
-                sender = self._extract_js_property(js_value, "sender", "WhatsApp")
-                msg_text = self._extract_js_property(js_value, "message", "New message")
-                count = self._extract_js_property(js_value, "count", 1, is_number=True)
-                
-                # Get enhanced data for NotificationManager
-                message_content = self._extract_js_property(js_value, "messageContent", "")
-                is_window_focused = self._extract_js_property(js_value, "isWindowFocused", False, is_boolean=True)
-                timestamp = self._extract_js_property(js_value, "timestamp", 0, is_number=True)
-                message_type = self._extract_js_property(js_value, "messageType", "message")
-                
-                # Prepare notification details
-                notification_title = f"New message from {sender}" if sender != "WhatsApp" else "WhatsApp"
-                notification_body = f"{msg_text} ({int(count)} unread)" if count > 1 else msg_text
-                
-                # Send the notification through the application with enhanced context
-                self.app.send_notification(
-                    notification_title, 
-                    notification_body,
-                    notification_type="message",
-                    sender=sender,
-                    message_content=message_content,
-                    is_window_focused=is_window_focused,
-                    message_count=int(count),
-                    timestamp=int(timestamp)
-                )
-            else:
-                self.logger.debug("Received non-object notification message")
-                # Fallback for simple string messages
-                self.app.send_notification("WhatsApp", "New message received", notification_type="message")
-                
-        except Exception as e:
-            self.logger.error(f"Error handling notification message: {e}")
-            # Fallback notification
-            self.app.send_notification("WhatsApp", "New message received", notification_type="message")
+    # Old JavaScript-based notification message handler removed
+    # Now using native WebKit notifications via show-notification signal
     
-    def _extract_js_property(self, js_value, property_name, default_value, is_number=False, is_boolean=False):
-        """Safely extract a property from JavaScript value with fallback."""
-        try:
-            if hasattr(js_value, 'object_has_property') and js_value.object_has_property(property_name):
-                prop = js_value.object_get_property(property_name)
-                if is_number:
-                    return prop.to_number() if hasattr(prop, 'to_number') else default_value
-                elif is_boolean:
-                    return prop.to_boolean() if hasattr(prop, 'to_boolean') else default_value
-                else:
-                    return prop.to_string() if hasattr(prop, 'to_string') else default_value
-            return default_value
-        except Exception:
-            return default_value
+    # JavaScript property extraction method removed - no longer needed with native WebKit notifications
 
     def _on_window_focus_changed(self, window, pspec):
         """Handle window focus changes for background notification tracking."""
@@ -1479,6 +1020,73 @@ class KarereWindow(Adw.ApplicationWindow):
         
         # Let WebKit handle other decisions normally
         return False
+    
+    def _on_permission_request(self, webview, request):
+        """Handle WebKit permission requests, including notification permissions."""
+        from gi.repository import WebKit
+        
+        try:
+            if isinstance(request, WebKit.NotificationPermissionRequest):
+                # Always allow notification permissions for WhatsApp Web
+                # This enables native web notifications to work
+                request.allow()
+                self.logger.info("Notification permission granted to WhatsApp Web")
+                return True
+            else:
+                # For other permission types, use default behavior
+                self.logger.debug(f"Permission request of type {type(request)} - using default behavior")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"Error handling permission request: {e}")
+            return False
+    
+    def _on_show_notification(self, webview, notification):
+        """Handle native WebKit notifications from WhatsApp Web."""
+        try:
+            # Extract notification data from WebKitNotification
+            title = notification.get_title() or "WhatsApp"
+            body = notification.get_body() or "New message"
+            tag = notification.get_tag() or None
+            notification_id = notification.get_id() or None
+            
+            self.logger.info(f"Native web notification: {title} - {body}")
+            
+            # Send through existing notification manager for filtering and preferences
+            if hasattr(self.app, 'send_notification'):
+                self.app.send_notification(
+                    title,
+                    body,
+                    notification_type="web_notification",
+                    notification_id=notification_id,
+                    tag=tag
+                )
+                
+            # Handle notification click by connecting to the clicked signal
+            notification.connect("clicked", self._on_notification_clicked)
+            notification.connect("closed", self._on_notification_closed)
+            
+            return True  # We handled the notification
+            
+        except Exception as e:
+            self.logger.error(f"Error handling web notification: {e}")
+            return False  # Let WebKit handle it
+    
+    def _on_notification_clicked(self, notification):
+        """Handle when a web notification is clicked."""
+        try:
+            # Focus the window when notification is clicked
+            self.present()
+            self.logger.info("Notification clicked - focusing window")
+        except Exception as e:
+            self.logger.error(f"Error handling notification click: {e}")
+    
+    def _on_notification_closed(self, notification):
+        """Handle when a web notification is closed."""
+        try:
+            self.logger.debug("Notification closed")
+        except Exception as e:
+            self.logger.error(f"Error handling notification close: {e}")
     
     def _should_open_externally(self, uri):
         """Determine if a URI should be opened in the external browser."""

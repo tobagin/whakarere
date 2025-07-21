@@ -415,7 +415,8 @@ class NotificationManager:
             
             # Add icon if available
             if hasattr(self.app, 'get_application_id'):
-                notification.set_icon(Gio.ThemedIcon.new("io.github.tobagin.karere"))
+                app_id = self.app.get_application_id()
+                notification.set_icon(Gio.ThemedIcon.new(app_id))
             
             # Send notification
             self.app.send_notification(None, notification)

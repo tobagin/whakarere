@@ -82,14 +82,18 @@
   <releases>
     <release version="@VERSION@" date="2025-07-21">
       <description>
-        <p>Updated screenshots and visual documentation</p>
+        <p>Major architectural improvement: Native WebKit notifications</p>
         <ul>
-          <li>Added comprehensive screenshot gallery showcasing all application features</li>
-          <li>Updated screenshots to show current application design and interface</li>
-          <li>Added detailed preference screens for general settings, notifications, spell checking, and crash reporting</li>
-          <li>Enhanced AppStream metadata with descriptive captions for better software center presentation</li>
-          <li>Improved visual documentation to help users understand application capabilities</li>
-          <li>Better representation of the modern GTK4/Libadwaita interface</li>
+          <li>Replaced JavaScript injection notification system with native WebKit notification API</li>
+          <li>Removed 398 lines of complex JavaScript code for better performance and reliability</li>
+          <li>Implemented native WebKit permission-request and show-notification signal handlers</li>
+          <li>Enhanced notification system reliability - no longer depends on WhatsApp UI changes</li>
+          <li>Fixed dev/production notification registration to use correct application IDs</li>
+          <li>Added native WebKit notification permission handling with automatic grants</li>
+          <li>Improved notification performance by eliminating JavaScript polling and DOM parsing</li>
+          <li>Enhanced screenshot paste functionality for direct clipboard image sharing</li>
+          <li>Cleaner, more maintainable codebase with standards-compliant notification handling</li>
+          <li>Future-proof notification system that works independently of web interface changes</li>
         </ul>
       </description>
     </release>
