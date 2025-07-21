@@ -147,6 +147,12 @@ class KarereWindow(Adw.ApplicationWindow):
             webkit_settings.set_javascript_can_access_clipboard(True)
             self.logger.info("Clipboard access enabled for screenshot paste")
             
+            # Enable media capture and other permissions that might be needed for notifications
+            webkit_settings.set_enable_media(True)
+            webkit_settings.set_enable_media_capabilities(True)
+            webkit_settings.set_auto_load_images(True)
+            self.logger.info("Additional WebKit permissions enabled")
+            
             # Set user agent to avoid mobile version and show custom app name
             from .application import BUS_NAME
             app_name = "Karere.dev" if BUS_NAME.endswith('.dev') else "Karere"
@@ -170,8 +176,7 @@ class KarereWindow(Adw.ApplicationWindow):
         self.webview.set_hexpand(True)
         self.webview_container.append(self.webview)
         
-        # Connect to page load events to inject JavaScript
-        self.webview.connect("load-changed", self._on_load_changed)
+        # Page load events handled by error handlers setup
         
         # Set up native WebKit notification handling
         self.webview.connect("permission-request", self._on_permission_request)
@@ -308,12 +313,89 @@ class KarereWindow(Adw.ApplicationWindow):
                 self.logger.info("Page load finished - using native WebKit notifications")
                 # Native WebKit notification handling enabled via permission-request and show-notification signals
                 # JavaScript notification injection system removed for better reliability and performance
+                
+                # Inject debug script to monitor notification status
+                self._inject_notification_debug_script()
             elif load_event == WebKit.LoadEvent.STARTED:
                 self.logger.info("Page load started")
             elif load_event == WebKit.LoadEvent.COMMITTED:
                 self.logger.info("Page load committed")
         except Exception as e:
             self.logger.error(f"Error handling load event: {e}")
+    
+    def _inject_notification_debug_script(self):
+        """Inject debug script to monitor and enable notification permissions."""
+        debug_script = """
+        (function() {
+            console.log('Karere Debug: Checking notification permissions');
+            
+            // Log current notification permission
+            if ('Notification' in window) {
+                console.log('Karere Debug: Notification API available, permission:', Notification.permission);
+                
+                // If permission is default, try to request it
+                if (Notification.permission === 'default') {
+                    console.log('Karere Debug: Requesting notification permission...');
+                    Notification.requestPermission().then(permission => {
+                        console.log('Karere Debug: Notification permission result:', permission);
+                    }).catch(error => {
+                        console.log('Karere Debug: Permission request error:', error);
+                    });
+                }
+                
+                // Override Notification constructor to log when notifications are created
+                const OriginalNotification = window.Notification;
+                window.Notification = function(title, options) {
+                    console.log('Karere Debug: WhatsApp attempting to create notification:', title, options);
+                    return new OriginalNotification(title, options);
+                };
+                
+                // Copy static properties
+                Object.setPrototypeOf(window.Notification, OriginalNotification);
+                Object.defineProperty(window.Notification, 'permission', {
+                    get: () => OriginalNotification.permission
+                });
+                window.Notification.requestPermission = OriginalNotification.requestPermission.bind(OriginalNotification);
+                
+                // Try to force WhatsApp to show notification settings after page loads
+                setTimeout(() => {
+                    console.log('Karere Debug: Attempting to trigger WhatsApp notification setup...');
+                    
+                    // Look for notification settings in WhatsApp Web
+                    const settingsSelectors = [
+                        '[data-testid="menu"]',
+                        '[title="Menu"]',
+                        '[aria-label*="menu" i]'
+                    ];
+                    
+                    let foundSettings = false;
+                    for (const selector of settingsSelectors) {
+                        const element = document.querySelector(selector);
+                        if (element) {
+                            console.log('Karere Debug: Found WhatsApp menu element:', selector);
+                            foundSettings = true;
+                            break;
+                        }
+                    }
+                    
+                    if (foundSettings) {
+                        console.log('Karere Debug: WhatsApp Web loaded, notifications should be available');
+                    } else {
+                        console.log('Karere Debug: WhatsApp Web menu not found, may still be loading');
+                    }
+                }, 5000);
+                
+            } else {
+                console.log('Karere Debug: Notification API not available');
+            }
+        })();
+        """
+        
+        try:
+            self.webview.evaluate_javascript(debug_script, -1, None, None, None, None, None)
+            self.logger.info("Notification debug script injected")
+        except Exception as e:
+            self.logger.error(f"Failed to inject notification debug script: {e}")
     
     def _on_resource_load_started(self, webview, resource, request):
         """Handle resource load start for error monitoring."""
@@ -499,391 +581,12 @@ class KarereWindow(Adw.ApplicationWindow):
         self.logger.info("Window close request received")
         return self.app.on_window_delete_event()
     
-    def _on_load_changed(self, webview, load_event):
-        """Handle WebView load events to inject JavaScript for notifications."""
-        # Delegate to the error-handling version
-        self._on_load_changed_with_error_handling(webview, load_event)
+    # Removed duplicate _on_load_changed method - now using _on_load_changed_with_error_handling directly
     
-    # JavaScript notification injection system removed - now using native WebKit notifications
-    # This provides better performance, reliability, and future-proofing
-        js_script = """
-        (function() {
-            console.log('Karere: Notification script injected');
-            
-            let lastMessageCount = 0;
-            let isWindowFocused = true;
-            let lastNotificationTime = 0;
-            let lastMessageText = '';
-            
-            // Check if window is focused
-            window.addEventListener('focus', () => { 
-                isWindowFocused = true; 
-                console.log('Karere: Window focused');
-            });
-            window.addEventListener('blur', () => { 
-                isWindowFocused = false; 
-                console.log('Karere: Window blurred');
-            });
-            
-            
-            // Simple DOM check for debugging
-            function inspectDOM() {
-                const unreadElements = document.querySelectorAll('[data-icon="unread-count"], [data-testid="unread-count"]');
-                if (unreadElements.length > 0) {
-                    console.log('Karere: Found', unreadElements.length, 'unread indicators');
-                }
-            }
-            
-            function isEmojiPickerOpen() {
-                // Check for emoji picker/selector dialogs
-                const emojiSelectors = [
-                    '[data-emoji-picker]',
-                    '[class*="emoji-picker"]',
-                    '[class*="emoji-selector"]',
-                    '[role="dialog"][aria-label*="emoji" i]',
-                    '[role="dialog"][aria-label*="sticker" i]',
-                    'div[style*="z-index"][style*="position: absolute"]:has([data-emoji])',
-                    'div[data-animate-modal-popup="true"]' // WhatsApp's modal animation container
-                ];
-                
-                return emojiSelectors.some(selector => {
-                    try {
-                        return document.querySelector(selector) !== null;
-                    } catch (e) {
-                        return false; // Ignore invalid selectors
-                    }
-                });
-            }
-            
-            function isModalDialogOpen() {
-                // Check for any modal dialogs that might interfere
-                const modalSelectors = [
-                    '[role="dialog"]',
-                    '[aria-modal="true"]',
-                    '.modal-open',
-                    '[class*="modal"][class*="open"]',
-                    'div[style*="position: fixed"][style*="z-index"]'
-                ];
-                
-                return modalSelectors.some(selector => {
-                    try {
-                        const elements = document.querySelectorAll(selector);
-                        // Check if modal is actually visible (not just present in DOM)
-                        return Array.from(elements).some(el => {
-                            const style = window.getComputedStyle(el);
-                            return style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
-                        });
-                    } catch (e) {
-                        return false;
-                    }
-                });
-            }
-            
-            function checkForNewMessages() {
-                try {
-                    // Skip detection if emoji picker or other modal dialogs are open
-                    if (isEmojiPickerOpen() || isModalDialogOpen()) {
-                        return; // Don't interfere with UI dialogs
-                    }
-                    
-                    // Performance safeguard - limit execution time
-                    const startTime = performance.now();
-                    const maxExecutionTime = 100; // 100ms max
-                    
-                    let totalUnread = 0;
-                    let hasNewMessages = false;
-                    let foundElements = [];
-                    
-                    // Enhanced detection with multiple approaches
-                    const detectionMethods = [
-                        // Method 1: Standard unread count selectors
-                        () => {
-                            const selectors = [
-                                '[data-icon="unread-count"]',
-                                '[data-testid="unread-count"]', 
-                                'span[data-icon="unread-count"]'
-                            ];
-                            let count = 0;
-                            for (const selector of selectors) {
-                                const elements = document.querySelectorAll(selector);
-                                elements.forEach(el => {
-                                    const text = el.textContent || el.innerText;
-                                    const num = parseInt(text?.replace(/[^0-9]/g, '')) || 0;
-                                    if (num > 0) {
-                                        count += num;
-                                        foundElements.push({selector, text, num});
-                                    }
-                                });
-                            }
-                            return count;
-                        },
-                        
-                        // Method 2: Aria-label based detection (with visibility validation)
-                        () => {
-                            const elements = document.querySelectorAll('[aria-label*="unread"], [aria-label*="message"]');
-                            let count = 0;
-                            elements.forEach(el => {
-                                // Check if element is actually visible
-                                const style = window.getComputedStyle(el);
-                                if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
-                                    return; // Skip hidden elements
-                                }
-                                
-                                const ariaLabel = el.getAttribute('aria-label') || '';
-                                const matches = ariaLabel.match(/\\d+/g);
-                                if (matches) {
-                                    const num = parseInt(matches[0]) || 0;
-                                    
-                                    // Additional validation: make sure this is actually an unread indicator
-                                    const isUnreadIndicator = ariaLabel.toLowerCase().includes('unread') ||
-                                                             el.closest('[data-testid="unread-count"]') ||
-                                                             el.className.includes('unread');
-                                    
-                                    if (num > 0 && isUnreadIndicator) {
-                                        count += num;
-                                        foundElements.push({method: 'aria-label', ariaLabel, num});
-                                    }
-                                }
-                            });
-                            return count;
-                        },
-                        
-                        // Method 3: Visual indicator dots
-                        () => {
-                            const indicators = document.querySelectorAll('[data-icon="unread"], span[data-icon="unread"]');
-                            if (indicators.length > 0) {
-                                foundElements.push({method: 'visual-dots', count: indicators.length});
-                                return indicators.length;
-                            }
-                            return 0;
-                        },
-                        
-                        // Method 4: Chat container analysis (with visibility checks)
-                        () => {
-                            const chatContainers = document.querySelectorAll('div[data-testid="cell-frame-container"]');
-                            let count = 0;
-                            chatContainers.forEach(container => {
-                                // Only count if the container is actually visible
-                                const containerStyle = window.getComputedStyle(container);
-                                if (containerStyle.display === 'none' || containerStyle.visibility === 'hidden') {
-                                    return; // Skip hidden containers
-                                }
-                                
-                                const spans = container.querySelectorAll('span');
-                                spans.forEach(span => {
-                                    const text = span.textContent?.trim();
-                                    if (text && /^\\d+$/.test(text)) {
-                                        const num = parseInt(text);
-                                        
-                                        // Additional validation: check if this span is actually an unread indicator
-                                        const spanStyle = window.getComputedStyle(span);
-                                        const isVisibleSpan = spanStyle.display !== 'none' && 
-                                                            spanStyle.visibility !== 'hidden' && 
-                                                            spanStyle.opacity !== '0';
-                                        
-                                        // Check if it's in a context that looks like an unread indicator
-                                        const hasUnreadContext = span.closest('[data-testid="unread-count"]') ||
-                                                               span.className.includes('unread') ||
-                                                               span.getAttribute('aria-label')?.includes('unread');
-                                        
-                                        if (num > 0 && num < 100 && isVisibleSpan && hasUnreadContext) {
-                                            count += num;
-                                            foundElements.push({method: 'chat-container', text, num});
-                                        }
-                                    }
-                                });
-                            });
-                            return count;
-                        }
-                    ];
-                    
-                    // Run all detection methods and take the highest count (not sum)
-                    let detectionResults = [];
-                    for (let i = 0; i < detectionMethods.length; i++) {
-                        // Check if we're taking too long
-                        if (performance.now() - startTime > maxExecutionTime) {
-                            console.warn('Karere: Detection taking too long, stopping early');
-                            break;
-                        }
-                        
-                        const methodCount = detectionMethods[i]();
-                        detectionResults.push(methodCount);
-                        if (methodCount > 0) hasNewMessages = true;
-                    }
-                    
-                    // Use the highest count from valid methods, but add aggressive validation
-                    const validCounts = detectionResults.filter(count => count >= 0 && count < 999);
-                    
-                    // If we get a large count (>10), validate it by checking if there are actually visible unread indicators
-                    let potentialCount = validCounts.length > 0 ? Math.max(...validCounts) : 0;
-                    
-                    if (potentialCount > 10) {
-                        // Cross-validate with actual visible unread indicators
-                        const visibleUnreadIndicators = document.querySelectorAll('[data-testid="unread-count"]:not([style*="display: none"]), .unread-count:not([style*="display: none"])');
-                        const visibleUnreadChats = document.querySelectorAll('[data-testid="cell-frame-container"]:has([data-testid="unread-count"])');
-                        
-                        // If no visible unread indicators but we detected a high count, it's likely false
-                        if (visibleUnreadIndicators.length === 0 && visibleUnreadChats.length === 0) {
-                            console.warn(`Karere: Rejecting suspicious high count ${potentialCount} - no visible unread indicators found`);
-                            potentialCount = 0;
-                        }
-                        
-                        // Additional check: see if we can find the actual chat list with unread counts
-                        const chatList = document.querySelector('[data-testid="chat-list"], [aria-label*="Chat list" i]');
-                        if (chatList) {
-                            const unreadChatsInList = chatList.querySelectorAll('[data-testid="unread-count"], .unread-count');
-                            if (unreadChatsInList.length === 0 && potentialCount > 5) {
-                                console.warn(`Karere: Rejecting high count ${potentialCount} - chat list shows no unread messages`);
-                                potentialCount = 0;
-                            }
-                        }
-                    }
-                    
-                    totalUnread = potentialCount;
-                    
-                    // Log detection results when there are changes
-                    if (totalUnread !== lastMessageCount) {
-                        console.log('Karere: Unread count changed:', totalUnread);
-                    }
-                    
-                    // Check for new message content
-                    const messageElements = document.querySelectorAll('[data-testid="msg-container"], [data-testid="conversation-panel-messages"] > div:last-child');
-                    let latestMessageText = '';
-                    if (messageElements.length > 0) {
-                        const lastMessage = messageElements[messageElements.length - 1];
-                        latestMessageText = lastMessage.textContent?.substring(0, 100) || '';
-                    }
-                    
-                    // Determine if we should attempt notification
-                    const now = Date.now();
-                    const hasNewContent = (
-                        (hasNewMessages && totalUnread > lastMessageCount) ||
-                        (latestMessageText && latestMessageText !== lastMessageText && latestMessageText.length > 0)
-                    ) && (now - lastNotificationTime) > 3000; // Reduced cooldown
-                    
-                    if (hasNewContent) {
-                        // Try to get the sender name
-                        let senderName = 'WhatsApp';
-                        const senderSelectors = [
-                            '[aria-selected="true"] [title]',
-                            '[data-testid="conversation-title"]',
-                            'header [data-testid="conversation-info-header"] span[title]',
-                            '._ao3e ._aou8 + div'
-                        ];
-                        
-                        for (const selector of senderSelectors) {
-                            const element = document.querySelector(selector);
-                            if (element) {
-                                senderName = element.textContent || element.getAttribute('title') || senderName;
-                                break;
-                            }
-                        }
-                        
-                        // Send notification with comprehensive context for NotificationManager
-                        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.notification) {
-                            window.webkit.messageHandlers.notification.postMessage({
-                                sender: senderName,
-                                message: totalUnread > 0 ? `${totalUnread} new message(s)` : 'New message received',
-                                count: totalUnread || 1,
-                                messageContent: latestMessageText?.substring(0, 200) || '',
-                                isWindowFocused: isWindowFocused,
-                                timestamp: now,
-                                messageType: 'message'
-                            });
-                            lastNotificationTime = now;
-                            console.log('Karere: Notification data sent for:', senderName, 'window focused:', isWindowFocused);
-                        }
-                    }
-                    
-                    lastMessageCount = totalUnread;
-                    lastMessageText = latestMessageText;
-                    
-                } catch (error) {
-                    console.error('Karere: Error checking messages:', error);
-                }
-            }
-            
-            // DOM inspection after 5 seconds (for debugging)
-            setTimeout(inspectDOM, 5000);
-            
-            // Check every 3 seconds for new messages (reduced frequency to prevent interference)
-            setInterval(checkForNewMessages, 3000);
-            
-            // Also listen for DOM changes with throttling
-            let timeoutId;
-            const observer = new MutationObserver((mutations) => {
-                // Skip if emoji picker or modal is open
-                if (isEmojiPickerOpen() || isModalDialogOpen()) {
-                    return;
-                }
-                
-                // Check if any relevant changes occurred
-                const relevantMutation = mutations.some(mutation => {
-                    // Ignore emoji-related mutations
-                    if (mutation.target) {
-                        const target = mutation.target;
-                        if (target.nodeType === Node.ELEMENT_NODE) {
-                            const className = target.className || '';
-                            const id = target.id || '';
-                            // Skip emoji picker, modal, or animation-related changes
-                            if (className.includes('emoji') || 
-                                className.includes('modal') || 
-                                className.includes('animate') ||
-                                className.includes('picker') ||
-                                id.includes('emoji') ||
-                                target.hasAttribute('data-emoji') ||
-                                target.hasAttribute('data-animate-modal-popup')) {
-                                return false;
-                            }
-                        }
-                    }
-                    
-                    return mutation.type === 'childList' || 
-                           (mutation.type === 'attributes' && 
-                            ['aria-label', 'data-icon', 'data-testid', 'title'].includes(mutation.attributeName));
-                });
-                
-                if (relevantMutation) {
-                    clearTimeout(timeoutId);
-                    timeoutId = setTimeout(checkForNewMessages, 1000); // Increased delay to reduce interference
-                }
-            });
-            
-            // Start observing when the page is ready
-            function startObserving() {
-                if (document.body) {
-                    observer.observe(document.body, {
-                        childList: true,
-                        subtree: true,
-                        attributes: true,
-                        attributeFilter: ['aria-label', 'data-icon', 'data-testid', 'title', 'class']
-                    });
-                    console.log('Karere: DOM observer started');
-                    
-                    // Initial check after observer starts
-                    setTimeout(checkForNewMessages, 1000);
-                } else {
-                    setTimeout(startObserving, 1000);
-                }
-            }
-            
-            startObserving();
-            console.log('Karere: Enhanced message detection initialized');
-        })();
-        """
-        
-        self.logger.info("Injecting notification detection script")
-        self.webview.evaluate_javascript(js_script, -1, None, None, None, self._on_javascript_result, None)
     
     # CSS injection system removed - not needed for current functionality
 
-    def _on_javascript_result(self, webview, task, user_data):
-        """Handle JavaScript execution result."""
-        try:
-            webview.evaluate_javascript_finish(task)
-            self.logger.debug("JavaScript injection completed successfully")
-        except Exception as e:
-            self.logger.error(f"JavaScript injection failed: {e}")
+    # JavaScript result handler removed - no longer needed with native WebKit notifications
     
     # Old JavaScript-based notification message handler removed
     # Now using native WebKit notifications via show-notification signal
@@ -894,9 +597,13 @@ class KarereWindow(Adw.ApplicationWindow):
         """Handle window focus changes for background notification tracking."""
         try:
             is_focused = self.is_active()
+            self.logger.info(f"Window focus changed: {'focused' if is_focused else 'unfocused'}")
+            
             if hasattr(self.app, 'notification_manager') and self.app.notification_manager:
                 self.app.notification_manager.on_window_focus_changed(is_focused)
-                self.logger.debug(f"Window focus changed: {'focused' if is_focused else 'unfocused'}")
+                self.logger.info(f"Notification manager updated with focus state: {is_focused}")
+            else:
+                self.logger.warning("Notification manager not available for focus change")
         except Exception as e:
             self.logger.error(f"Error handling window focus change: {e}")
 
@@ -1026,6 +733,8 @@ class KarereWindow(Adw.ApplicationWindow):
         from gi.repository import WebKit
         
         try:
+            self.logger.info(f"Permission request received: {type(request)}")
+            
             if isinstance(request, WebKit.NotificationPermissionRequest):
                 # Always allow notification permissions for WhatsApp Web
                 # This enables native web notifications to work
